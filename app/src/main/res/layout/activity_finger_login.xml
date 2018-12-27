@@ -1,0 +1,93 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/login_02"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="100dp"
+        android:layout_gravity="center"
+        android:gravity="center" >
+
+        <ImageView
+            android:id="@+id/iv_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/login_icon06" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+
+        <RelativeLayout
+            android:layout_width="250dp"
+            android:layout_height="fill_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp">
+
+            <Button
+                android:id="@+id/btn_login"
+                android:layout_width="250dp"
+                android:layout_height="35dp"
+                android:layout_gravity="center"
+                android:layout_below="@+id/et_password"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/button_corner"
+                android:enabled="true"
+                android:gravity="center"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:text="登  录"
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/et_password"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="35dp"
+                android:background="@drawable/login_textcorner"
+                android:ems="10"
+                android:hint="输入你的密码"
+                android:paddingLeft="40dp"
+                android:inputType="textPassword"
+                android:singleLine="true"
+                android:textColorHint="#DDDDDD"
+                android:textSize="12sp" >
+                <requestFocus />
+            </EditText>
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="87dp"
+                android:text=""
+                android:textColor="#F8F8F8"
+                android:textSize="13dip" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/textView1"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="31dp"
+                android:text="长江勘测规划设计研究院"
+                android:textColor="#F8F8F8"
+                android:textSize="13dip" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

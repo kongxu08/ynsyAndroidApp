@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#f7f7f7</color>
+    <color name="colorPrimaryDark">#0F77BD</color>
+    <color name="colorAccent">#0F77BD</color>
+    <color name="black">#000</color>
+    <!--指纹-->
+    <color name="success_color">#009688</color>
+    <color name="warning_color">#f4511e</color>
+</resources>
