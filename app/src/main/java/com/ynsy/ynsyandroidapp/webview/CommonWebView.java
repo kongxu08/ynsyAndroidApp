@@ -16,6 +16,7 @@ import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -86,6 +87,7 @@ public class CommonWebView extends AppCompatActivity {
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setAllowFileAccessFromFileURLs(true);
         webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);//设置缓存模式
 
         webView.addJavascriptInterface(this,"android");
 
@@ -153,15 +155,8 @@ public class CommonWebView extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-
-                /*if (url.indexOf("/MessApp/STManage/caipu/") != -1) {
-                    view.evaluateJavascript("javascript:getUserInfo('"+AppStart.prefs.getString("currentUser","{}")+"')", new ValueCallback<String>() {
-                        @Override
-                        public void onReceiveValue(String value) {
-
-                        }
-                    });
-                }*/
+                String username = SPUtils.get(activity,"username","").toString();
+                view.loadUrl("javascript:window._NativeActivate_('"+username+"')");
             }
 
         });
@@ -184,12 +179,12 @@ public class CommonWebView extends AppCompatActivity {
         webView.loadUrl(openUrl);
 
         //开启线程 保存友盟推送的deviceToken
-        new Thread(){
-            @Override
-            public void run() {
-                initUserDevice();
-            }
-        }.start();
+//        new Thread(){
+//            @Override
+//            public void run() {
+//                initUserDevice();
+//            }
+//        }.start();
 
     }
     //双击返回退出标识
@@ -239,12 +234,12 @@ public class CommonWebView extends AppCompatActivity {
     @JavascriptInterface
     public void logOut() {
         //开启线程 删除友盟推送的deviceToken
-        new Thread(){
-            @Override
-            public void run() {
-                deleteUserDevice();
-            }
-        }.start();
+//        new Thread(){
+//            @Override
+//            public void run() {
+//                deleteUserDevice();
+//            }
+//        }.start();
         SPUtils.remove(this,"username");
         SPUtils.remove(this,"password");
         Intent intent = new Intent(CommonWebView.this, LoginActivity.class);
@@ -389,7 +384,7 @@ public class CommonWebView extends AppCompatActivity {
         return 0;
     }
 
-    public void initUserDevice(){
+/*    public void initUserDevice(){
         String userInfo = SPUtils.get(activity,"userInfo","").toString();
         String deviceToken = SPUtils.get(activity,"deviceToken","").toString();
         if(!StringHelper.isEmpty(userInfo) && !StringHelper.isEmpty(deviceToken)){
@@ -421,9 +416,9 @@ public class CommonWebView extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-    }
+    }*/
 
-    public void deleteUserDevice(){
+/*    public void deleteUserDevice(){
             try{
                 OkHttpClient client = new OkHttpClient();
                 FormBody formBody = new FormBody.Builder()
@@ -442,6 +437,6 @@ public class CommonWebView extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-    }
+    }*/
 
 }

@@ -155,7 +155,7 @@ public class FingerLoginActivity extends AppCompatActivity {
         intent.setClass(FingerLoginActivity.this, CommonWebView.class);
         Bundle bundle = new Bundle();
         String username=SPUtils.get(activity,"username","").toString();
-        bundle.putString("url", UrlManager.appRemoteHomePageUrl+"?username="+username);
+        bundle.putString("url", UrlManager.appRemoteHomePageUrl);
         intent.putExtras(bundle);
         startActivity(intent);
         finish();

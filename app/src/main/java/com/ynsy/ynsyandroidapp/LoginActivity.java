@@ -184,7 +184,7 @@ public class LoginActivity extends AppCompatActivity {
                         JSONObject jsonMsg = new JSONObject(rps.body().string());
                         if (jsonMsg.getBoolean("result")) {
                            //取当前登陆用户对象
-                            RequestBody requestBody = new FormBody.Builder()
+/*                            RequestBody requestBody = new FormBody.Builder()
                                     .add("userName", username)
                                     .add("password", pwd)
                                     .add("mobileLogin", "true")
@@ -197,7 +197,8 @@ public class LoginActivity extends AppCompatActivity {
                                 JSONObject userJson = new JSONObject(userStr);
                                 userInfoJson=userJson.getJSONObject("body").getJSONObject("map").getJSONObject("userInfo");
                                 handler.sendEmptyMessage(1);
-                            }
+                            }*/
+                            handler.sendEmptyMessage(1);
                         } else {
                             //认证失败
                             String name = jsonMsg.getString("message");
@@ -239,19 +240,19 @@ public class LoginActivity extends AppCompatActivity {
                 case 1:
                     loadingView.setVisibility(View.GONE);
 
-                    if (userInfoJson == null) {
-                        T.showLong(activity, "获取用户数据失败");
-                        break;
-                    }
+//                    if (userInfoJson == null) {
+//                        T.showLong(activity, "获取用户数据失败");
+//                        break;
+//                    }
                     SPUtils.put(activity, "username", username);
                     SPUtils.put(activity, "password", pwd);
-                    SPUtils.put(activity, "userInfo", userInfoJson);
+//                    SPUtils.put(activity, "userInfo", userInfoJson);
 
                     //跳转
                     Intent intent = new Intent();
                     intent.setClass(LoginActivity.this, CommonWebView.class);
                     Bundle bundle = new Bundle();
-                    bundle.putString("url", UrlManager.appRemoteHomePageUrl + "?username=" + username);
+                    bundle.putString("url", UrlManager.appRemoteHomePageUrl);
                     intent.putExtras(bundle);
                     startActivity(intent);
                     finish();
@@ -268,7 +269,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
-    private JSONObject getUserInfo(OkHttpClient client, String username) {
+/*    private JSONObject getUserInfo(OkHttpClient client, String username) {
         JSONObject jsonObject = null;
         try {
             //MediaType  设置Content-Type 标头中包含的媒体类型值
@@ -291,7 +292,7 @@ public class LoginActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return jsonObject;
-    }
+    }*/
 
 
     /**
