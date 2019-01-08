@@ -9,6 +9,6 @@ public class UrlManager {
    //public static String appRemoteLoginUrl = Host+"/yn/a/login";
     public static String appRemoteHomePageUrl = appHost+"/";
 //    public static String getUserInfoUrl = Host+"/yn/a/commonApi/getUserInfo";
-////    public static String userDeviceSaveOrUpdateUrl = Host+"/cjwsjy-yt/createUserDevices";
-////    public static String userDeviceDeleteUrl = Host+"/cjwsjy-yt/deleteUserDevices";
+//    public static String userDeviceSaveOrUpdateUrl = Host+"/cjwsjy-yt/createUserDevices";
+//    public static String userDeviceDeleteUrl = Host+"/cjwsjy-yt/deleteUserDevices";
 }
