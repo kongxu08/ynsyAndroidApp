@@ -2,7 +2,9 @@ package com.ynsy.ynsyandroidapp.webview;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +26,7 @@ import android.widget.Toast;
 
 import com.ynsy.ynsyandroidapp.LoginActivity;
 import com.ynsy.ynsyandroidapp.R;
+import com.ynsy.ynsyandroidapp.util.BadgeNum;
 import com.ynsy.ynsyandroidapp.util.DeviceUtil;
 import com.ynsy.ynsyandroidapp.util.DownloadUtil;
 import com.ynsy.ynsyandroidapp.util.L;
@@ -40,6 +44,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -60,6 +67,9 @@ public class CommonWebView extends AppCompatActivity {
 
     private String[] closeWebViews;
 
+    private String versionNumber;
+    private String changeContent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,7 +87,7 @@ public class CommonWebView extends AppCompatActivity {
 
         //获取指定关闭webView的url
         closeWebViews = intent.getStringArrayExtra("closeWebViews");
-
+        appendCloseWebUrl();
 
 //        progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
         webView = (WebView) findViewById(R.id.webviews);
@@ -156,7 +166,17 @@ public class CommonWebView extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 String username = SPUtils.get(activity,"username","").toString();
-                view.loadUrl("javascript:window._NativeActivate_('"+username+"')");
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("userName",username);
+                    String txlStr =SPUtils.get(activity,"TXL","").toString();
+                    JSONObject txlJson = new JSONObject(txlStr);
+                    jsonObject.put("contactBook",txlJson);
+                    jsonObject.put("softVersion",DeviceUtil.getReleaseVersion(activity));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                view.loadUrl("javascript:window._NativeActivate_('"+jsonObject.toString()+"')");
             }
 
         });
@@ -179,12 +199,27 @@ public class CommonWebView extends AppCompatActivity {
         webView.loadUrl(openUrl);
 
         //开启线程 保存友盟推送的deviceToken
-//        new Thread(){
-//            @Override
-//            public void run() {
-//                initUserDevice();
-//            }
-//        }.start();
+        new Thread(){
+            @Override
+            public void run() {
+                initUserDevice();
+            }
+        }.start();
+
+        //检查版本更新
+        try {
+            Date today = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            today = sdf.parse(sdf.format(today));
+            long tipsUpdateValue = (long)SPUtils.get(activity,"tipsUpdateValue",0l);
+            if(today.getTime()>tipsUpdateValue){
+                checkVersion();
+                SPUtils.put(activity,"tipsUpdateValue",today.getTime());
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
 
     }
     //双击返回退出标识
@@ -194,11 +229,18 @@ public class CommonWebView extends AppCompatActivity {
     * */
     @Override
     public void onBackPressed() {
-        /*if (webView.getUrl().indexOf(UrlManager.appRemoteHomePageUrl)!=-1) {*/
-            exit();
-        /*} else {
-            webView.goBack();
-        }*/
+        String webU = webView.getUrl();
+        for (String tempUrl : closeWebViews){
+            if (webU.equals(tempUrl)){
+                if(closeWebViews.length>5){
+                    super.onBackPressed();
+                }else{
+                   exit();
+                }
+            }else{
+                webView.goBack();
+            }
+        }
     }
 
     Handler handler = new Handler() {
@@ -212,9 +254,9 @@ public class CommonWebView extends AppCompatActivity {
     private void exit() {
         if (!isExit) {
             isExit = true;
-            Toast.makeText(getApplicationContext(), "再按一次退出", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "再按一次退出", Toast.LENGTH_SHORT).show();
             //利用handler延迟发送更改状态信息
-            handler.sendEmptyMessageDelayed(0, 3000);
+            handler.sendEmptyMessageDelayed(0, 2000);
         } else {
             finish();
             System.exit(0);
@@ -234,12 +276,12 @@ public class CommonWebView extends AppCompatActivity {
     @JavascriptInterface
     public void logOut() {
         //开启线程 删除友盟推送的deviceToken
-//        new Thread(){
-//            @Override
-//            public void run() {
-//                deleteUserDevice();
-//            }
-//        }.start();
+        new Thread(){
+            @Override
+            public void run() {
+                deleteUserDevice();
+            }
+        }.start();
         SPUtils.remove(this,"username");
         SPUtils.remove(this,"password");
         Intent intent = new Intent(CommonWebView.this, LoginActivity.class);
@@ -247,7 +289,7 @@ public class CommonWebView extends AppCompatActivity {
         finish();
     }
 
-    //下载附件
+    //下载附件并打开PDF
     @JavascriptInterface
     public void openFile(String url) {
         L.i(url);
@@ -259,6 +301,19 @@ public class CommonWebView extends AppCompatActivity {
         progressDialog.setCancelable(true);
         progressDialog.show();
         downFile(url);
+    }
+
+    //应用更新
+    @JavascriptInterface
+    public void updateApp() {
+        checkVersion();
+    }
+
+    //设置桌面角标
+    @JavascriptInterface
+    public void setBadge(String num) {//对应js中xxx.openWebView("")
+        int dbCount = Integer.parseInt(num);
+        BadgeNum.setBadgeNum(activity, dbCount);
     }
 
     /**
@@ -331,6 +386,60 @@ public class CommonWebView extends AppCompatActivity {
                         progressDialog.setProgress(msg.arg1);
                     }
                     break;
+                case 22:
+                    AlertDialog dialog = new AlertDialog.Builder(activity)
+                            .setTitle("发现新版本")
+                            .setMessage(changeContent)
+                            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setPositiveButton("下载", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    progressDialog = new ProgressDialog(activity);
+                                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                                    progressDialog.setMessage("下载中...");
+                                    progressDialog.setMax(100);
+                                    progressDialog.setCanceledOnTouchOutside(false);
+                                    progressDialog.setCancelable(true);
+                                    progressDialog.show();
+                                    new Thread(downLoadRun).start();
+                                }
+                            }).create();
+                    dialog.show();
+                    break;
+                case 23:
+                    T.showLong(activity,"下载完成");
+                    if(progressDialog!=null){
+                        progressDialog.dismiss();
+                    }
+                    File apkfile = (File) msg.obj;
+                    // 通过Intent安装APK文件
+                    Intent intent2 = new Intent(Intent.ACTION_VIEW);
+                    Uri uri2 = null;
+
+                    // 判断版本大于等于7.0
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        intent2.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        uri2 = FileProvider.getUriForFile(activity, "com.ynsy.ynsyandroidapp.FileProvider", apkfile);
+                    } else {
+                        //intent.addCategory("android.intent.category.DEFAULT");
+                        //设置intent的data和Type属性。
+                        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        uri2 = Uri.fromFile(apkfile);
+                    }
+                    intent2.setDataAndType(uri2, "application/vnd.android.package-archive");
+                    //跳转
+                    activity.startActivity(intent2);
+
+                    break;
+                case 24:
+                    T.showShort(activity,"已是最新版本");
+                    break;
             }
         }
     };
@@ -384,22 +493,44 @@ public class CommonWebView extends AppCompatActivity {
         return 0;
     }
 
-/*    public void initUserDevice(){
+    private void appendCloseWebUrl(){
+        if(closeWebViews==null){
+            closeWebViews = new String[5];
+            closeWebViews[0]=UrlManager.appRemoteHomePageUrl;
+            closeWebViews[1]=UrlManager.appRemoteHomePageUrl+"app";
+            closeWebViews[2]=UrlManager.appRemoteHomePageUrl+"todo";
+            closeWebViews[3]=UrlManager.appRemoteHomePageUrl+"contact";
+            closeWebViews[4]=UrlManager.appRemoteHomePageUrl+"account";
+        }else{
+            String[] strs = new String[closeWebViews.length+5];
+            for (int i = 0; i <closeWebViews.length ; i++) {
+                strs[i]=closeWebViews[i];
+            }
+            strs[closeWebViews.length]=UrlManager.appRemoteHomePageUrl;
+            strs[closeWebViews.length+1]=UrlManager.appRemoteHomePageUrl+"app";
+            strs[closeWebViews.length+2]=UrlManager.appRemoteHomePageUrl+"todo";
+            strs[closeWebViews.length+3]=UrlManager.appRemoteHomePageUrl+"contact";
+            strs[closeWebViews.length+4]=UrlManager.appRemoteHomePageUrl+"account";
+            closeWebViews=strs;
+        }
+    }
+
+    public void initUserDevice(){
         String userInfo = SPUtils.get(activity,"userInfo","").toString();
         String deviceToken = SPUtils.get(activity,"deviceToken","").toString();
         if(!StringHelper.isEmpty(userInfo) && !StringHelper.isEmpty(deviceToken)){
-                OkHttpClient client = new OkHttpClient();
-                try{
-                    JSONObject userInfoJson=new JSONObject(userInfo);
+            OkHttpClient client = new OkHttpClient();
+            try{
+                JSONObject userInfoJson=new JSONObject(userInfo);
                 FormBody formBody = new FormBody.Builder()
                         .add("userName",userInfoJson.getString("loginName"))
                         .add("userDisplayName",userInfoJson.getString("name"))
                         .add("devicesId",SPUtils.get(activity,"deviceToken","").toString())
                         .add("devicesType","android")
-                .add("userId",userInfoJson.getString("id"))
-                .add("machine",DeviceUtil.getManufacturer()+"_"+DeviceUtil.getDeviceModel())
-                .add("os",DeviceUtil.getSystemVersion())
-                .add("sppVersion",DeviceUtil.getReleaseVersion()).build();
+                        .add("userId",userInfoJson.getString("id"))
+                        .add("machine",DeviceUtil.getManufacturer()+"_"+DeviceUtil.getDeviceModel())
+                        .add("os",DeviceUtil.getSystemVersion())
+                        .add("appVersion",DeviceUtil.getReleaseVersion(activity)).build();
                 Request request = new Request.Builder()
                         .url(UrlManager.userDeviceSaveOrUpdateUrl)
                         .post(formBody)
@@ -416,9 +547,9 @@ public class CommonWebView extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-    }*/
+    }
 
-/*    public void deleteUserDevice(){
+    public void deleteUserDevice(){
             try{
                 OkHttpClient client = new OkHttpClient();
                 FormBody formBody = new FormBody.Builder()
@@ -437,6 +568,79 @@ public class CommonWebView extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-    }*/
+    }
+
+    private void checkVersion(){
+        new Thread(run).start();
+    }
+
+    Runnable run = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .url(UrlManager.appVersionUrl)
+                        .get()
+                        .build();
+                Response response = client.newCall(request).execute();
+                String body = "";
+                //成功则请求致远认证
+                if (response.isSuccessful()) {
+                    body = response.body().string();
+                    JSONObject rJson = new JSONObject(body);
+                    versionNumber = rJson.getString("versionNumber");
+                    changeContent = rJson.getString("changeContent");
+                    String curVersion = DeviceUtil.getReleaseVersion(activity);
+                    if(!versionNumber.equals(curVersion)){
+                       mHandler.sendEmptyMessage(22);
+                    }else{
+                        mHandler.sendEmptyMessage(24);
+                    }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };
+
+    /**
+     * 升级
+     */
+    private void updateApk(String url) {
+        DownloadUtil.get().download(url, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath(), url.substring(url.lastIndexOf("/")),
+                new DownloadUtil.OnDownloadListener() {
+                    @Override
+                    public void onDownloadSuccess(File file) {
+                        //下载完成进行相关逻辑操作
+                        Message msg = mHandler.obtainMessage();
+                        msg.what = 23;
+                        msg.obj=file;
+                        mHandler.sendMessage(msg);
+                    }
+                    @Override
+                    public void onDownloading(int progress) {
+                        Message msg = mHandler.obtainMessage();
+                        msg.what = 11;
+                        msg.arg1 = progress;
+                        mHandler.sendMessage(msg);
+                    }
+                    @Override
+                    public void onDownloadFailed(Exception e) {
+                        //下载异常进行相关提示操作
+                        Message msg = mHandler.obtainMessage();
+                        msg.what = 1;
+                        msg.obj = e;
+                        mHandler.sendMessage(msg);
+                    }
+                });
+    }
+
+    Runnable downLoadRun = new Runnable() {
+        @Override
+        public void run() {
+            updateApk(UrlManager.appDownLoadUrl);
+        }
+    };
 
 }

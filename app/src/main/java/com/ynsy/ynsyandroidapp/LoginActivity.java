@@ -184,10 +184,8 @@ public class LoginActivity extends AppCompatActivity {
                         JSONObject jsonMsg = new JSONObject(rps.body().string());
                         if (jsonMsg.getBoolean("result")) {
                            //取当前登陆用户对象
-/*                            RequestBody requestBody = new FormBody.Builder()
+                            RequestBody requestBody = new FormBody.Builder()
                                     .add("userName", username)
-                                    .add("password", pwd)
-                                    .add("mobileLogin", "true")
                                     .build();
                             Request oaRequest = new Request.Builder().url(UrlManager.getUserInfoUrl).post(requestBody).build();
                             Response oaResponse = client.newCall(oaRequest).execute();
@@ -197,7 +195,7 @@ public class LoginActivity extends AppCompatActivity {
                                 JSONObject userJson = new JSONObject(userStr);
                                 userInfoJson=userJson.getJSONObject("body").getJSONObject("map").getJSONObject("userInfo");
                                 handler.sendEmptyMessage(1);
-                            }*/
+                            }
                             handler.sendEmptyMessage(1);
                         } else {
                             //认证失败
@@ -240,13 +238,13 @@ public class LoginActivity extends AppCompatActivity {
                 case 1:
                     loadingView.setVisibility(View.GONE);
 
-//                    if (userInfoJson == null) {
-//                        T.showLong(activity, "获取用户数据失败");
-//                        break;
-//                    }
+                    if (userInfoJson == null) {
+                        T.showLong(activity, "获取用户数据失败");
+                        break;
+                    }
                     SPUtils.put(activity, "username", username);
                     SPUtils.put(activity, "password", pwd);
-//                    SPUtils.put(activity, "userInfo", userInfoJson);
+                    SPUtils.put(activity, "userInfo", userInfoJson);
 
                     //跳转
                     Intent intent = new Intent();

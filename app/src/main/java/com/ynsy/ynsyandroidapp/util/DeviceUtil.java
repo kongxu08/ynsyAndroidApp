@@ -1,5 +1,6 @@
 package com.ynsy.ynsyandroidapp.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
@@ -76,8 +77,15 @@ public class DeviceUtil {
     /**
      * 获得设备的固件版本号
      */
-    public static String getReleaseVersion() {
-        return StringHelper.makeSafe(Build.VERSION.RELEASE);
+    public static String getReleaseVersion(Activity activity) {
+        String pkName = activity.getPackageName();
+        String versionName = null;
+        try {
+            versionName = activity.getPackageManager().getPackageInfo(pkName,0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versionName;
     }
 
     /** 检测是否是中兴机器 */

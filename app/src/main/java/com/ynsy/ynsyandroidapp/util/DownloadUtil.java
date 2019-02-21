@@ -1,5 +1,12 @@
 package com.ynsy.ynsyandroidapp.util;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
+import android.support.v4.content.FileProvider;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -152,6 +159,39 @@ public class DownloadUtil {
 
         void onDownloadFailed(Exception e);
 
+    }
+
+
+
+    /**
+     *
+     * 安装apk
+     *
+     *
+     */
+    public static void installApk(Context ctx){
+        File dir = ctx.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        File apkfile = new File(dir, "Update.apk");
+        if (!apkfile.exists()) {
+            return;
+        }
+        // 通过Intent安装APK文件
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        Uri uri = null;
+
+        // 判断版本大于等于7.0
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            uri = FileProvider.getUriForFile(ctx, "com.cjwsjy.app.FileProvider", apkfile);
+        } else {
+            //intent.addCategory("android.intent.category.DEFAULT");
+            //设置intent的data和Type属性。
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            uri = Uri.fromFile(apkfile);
+        }
+        intent.setDataAndType(uri, "application/vnd.android.package-archive");
+        //跳转
+        ctx.startActivity(intent);
     }
 
 }

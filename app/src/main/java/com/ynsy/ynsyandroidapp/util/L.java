@@ -25,7 +25,7 @@ public class L
 
     public static boolean isDebug = true;// 是否需要打印bug，可以在application的onCreate函数里面初始化
 
-    private static final String TAG = "CJYT";
+    private static final String TAG = "YN";
 
 
     // 下面四个是默认tag的函数

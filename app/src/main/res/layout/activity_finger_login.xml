@@ -82,7 +82,7 @@
                 android:layout_alignTop="@+id/textView1"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="31dp"
-                android:text="长江勘测规划设计研究院"
+                android:text="云南省水利水电勘测设计研究院"
                 android:textColor="#F8F8F8"
                 android:textSize="13dip" />
 
