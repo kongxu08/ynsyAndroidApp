@@ -230,16 +230,16 @@ public class CommonWebView extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         String webU = webView.getUrl();
-        for (String tempUrl : closeWebViews){
-            if (webU.equals(tempUrl)){
-                if(closeWebViews.length>5){
-                    super.onBackPressed();
-                }else{
-                   exit();
+        if(closeWebViews.length>5){
+            super.onBackPressed();
+        }else{
+            for (String tempUrl : closeWebViews){
+                if (webU.equals(tempUrl)){
+                    exit();
+                    return;
                 }
-            }else{
-                webView.goBack();
             }
+            webView.goBack();
         }
     }
 
