@@ -48,6 +48,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -58,7 +59,7 @@ public class CommonWebView extends AppCompatActivity {
     private Activity activity;
 
     ProgressDialog progressDialog;
-    View loadingView;
+    View loadingWebView;
 
     private WebView webView;
     private String url;
@@ -77,7 +78,7 @@ public class CommonWebView extends AppCompatActivity {
         setContentView(R.layout.activity_common_webview);
 
         activity = this;
-        loadingView = LoadingUtil.creatLoadingView(activity);
+        loadingWebView = LoadingUtil.creatWebLoadingView(activity);
 
         username = SPUtils.get(activity,"username","").toString();
 
@@ -187,12 +188,10 @@ public class CommonWebView extends AppCompatActivity {
                 // TODO 自动生成的方法存根
 
                 if (newProgress == 100) {
-                    //pg1.setVisibility(View.GONE);//加载完网页进度条消失
-                    loadingView.setVisibility(View.GONE);
+                    loadingWebView.setVisibility(View.GONE);
                 } else {
-                    //pg1.setVisibility(View.VISIBLE);//开始加载网页时显示进度条
-                    //pg1.setProgress(newProgress);//设置进度值
-                    loadingView.setVisibility(View.VISIBLE);
+                    LoadingUtil.pg.setProgress(newProgress);//设置进度值
+                    loadingWebView.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -387,7 +386,7 @@ public class CommonWebView extends AppCompatActivity {
                     }
                     break;
                 case 22:
-                    AlertDialog dialog = new AlertDialog.Builder(activity)
+                    /*AlertDialog dialog = new AlertDialog.Builder(activity)
                             .setTitle("发现新版本")
                             .setMessage(changeContent)
                             .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -410,7 +409,32 @@ public class CommonWebView extends AppCompatActivity {
                                     new Thread(downLoadRun).start();
                                 }
                             }).create();
-                    dialog.show();
+                    dialog.show();*/
+                     new SweetAlertDialog(activity)
+                            .setTitleText("发现新版本")
+                            .setContentText(changeContent)
+                            .setConfirmText("下载")
+                            .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                @Override
+                                public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                    sweetAlertDialog.cancel();
+                                    progressDialog = new ProgressDialog(activity);
+                                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                                    progressDialog.setMessage("下载中...");
+                                    progressDialog.setMax(100);
+                                    progressDialog.setCanceledOnTouchOutside(false);
+                                    progressDialog.setCancelable(true);
+                                    progressDialog.show();
+                                    new Thread(downLoadRun).start();
+                                }
+                            })
+                            .setCancelButton("明天提醒", new SweetAlertDialog.OnSweetClickListener() {
+                                @Override
+                                public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                    sweetAlertDialog.cancel();
+                                }
+                            }).show();
+
                     break;
                 case 23:
                     T.showLong(activity,"下载完成");
@@ -574,6 +598,7 @@ public class CommonWebView extends AppCompatActivity {
         new Thread(run).start();
     }
 
+    //检查版本更新
     Runnable run = new Runnable() {
         @Override
         public void run() {
@@ -585,7 +610,6 @@ public class CommonWebView extends AppCompatActivity {
                         .build();
                 Response response = client.newCall(request).execute();
                 String body = "";
-                //成功则请求致远认证
                 if (response.isSuccessful()) {
                     body = response.body().string();
                     JSONObject rJson = new JSONObject(body);
