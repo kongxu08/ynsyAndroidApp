@@ -257,8 +257,9 @@ public class CommonWebView extends AppCompatActivity {
             //利用handler延迟发送更改状态信息
             handler.sendEmptyMessageDelayed(0, 2000);
         } else {
-            finish();
-            System.exit(0);
+//            finish();
+//            System.exit(0);
+            moveTaskToBack(false);
         }
     }
 

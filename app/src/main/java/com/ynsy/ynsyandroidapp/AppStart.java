@@ -14,6 +14,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 
 import com.ynsy.ynsyandroidapp.finger.FingerLoginActivity;
+import com.ynsy.ynsyandroidapp.service.NoticeService;
 import com.ynsy.ynsyandroidapp.util.L;
 import com.ynsy.ynsyandroidapp.util.SPUtils;
 import com.ynsy.ynsyandroidapp.util.UrlManager;
@@ -49,6 +50,9 @@ public class AppStart extends AppCompatActivity {
         final View view = View.inflate(this, R.layout.activity_app_start, null);
         setContentView(view);
 
+//        final Intent intent = new Intent(this,NoticeService.class);
+//        startService(intent);
+
         // 渐变展示启动屏
         AlphaAnimation animation = new AlphaAnimation(0.1f, 1.0f);
         //每天更新一次通讯录
@@ -57,10 +61,9 @@ public class AppStart extends AppCompatActivity {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             today = sdf.parse(sdf.format(today));
             long tipsUpdateValue = (long)SPUtils.get(this,"tipsUpdateTXL",0l);
-            /*if(today.getTime()>tipsUpdateValue){*/
+            if(today.getTime()>tipsUpdateValue){
                 new Thread(run).start();
-                SPUtils.put(this,"tipsUpdateTXL",today.getTime());
-/*            }else{
+            }else {
                 animation.setDuration(800);
                 view.startAnimation(animation);
                 animation.setAnimationListener(new Animation.AnimationListener() {
@@ -77,10 +80,12 @@ public class AppStart extends AppCompatActivity {
                     public void onAnimationStart(Animation animation) {
                     }
                 });
-            }*/
+            }
         } catch (ParseException e) {
             e.printStackTrace();
         }
+        /*
+            */
     }
     /**
      * 跳转到...
@@ -114,6 +119,12 @@ public class AppStart extends AppCompatActivity {
                     body = response.body().string();
                     JSONObject rJson = new JSONObject(body);
                     SPUtils.put(activity,"TXL",rJson);
+
+                    Date today = new Date();
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    today = sdf.parse(sdf.format(today));
+                    SPUtils.put(activity,"tipsUpdateTXL",today.getTime());
+
                     mHandler.sendEmptyMessage(0);
                 }
             }catch (Exception e){
