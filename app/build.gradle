@@ -37,6 +37,4 @@ dependencies {
     implementation 'com.umeng.umsdk:push:5.0.2'
     //DSBridge
     implementation project(path: ':dsbridge')
-
-    implementation 'com.github.maning0303:MNProgressHUD:V1.1.5'
-}
+    }
