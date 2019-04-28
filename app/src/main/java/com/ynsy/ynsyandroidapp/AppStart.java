@@ -1,7 +1,6 @@
 package com.ynsy.ynsyandroidapp;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,8 +12,9 @@ import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 
+import com.huawei.android.hms.agent.HMSAgent;
+import com.huawei.android.hms.agent.common.handler.ConnectHandler;
 import com.ynsy.ynsyandroidapp.finger.FingerLoginActivity;
-import com.ynsy.ynsyandroidapp.service.NoticeService;
 import com.ynsy.ynsyandroidapp.util.L;
 import com.ynsy.ynsyandroidapp.util.SPUtils;
 import com.ynsy.ynsyandroidapp.util.UrlManager;
@@ -39,6 +39,15 @@ public class AppStart extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        /**
+         * SDK连接HMS
+         */
+        HMSAgent.connect(this, new ConnectHandler() {
+            @Override
+            public void onConnect(int rst) {
+                L.d("HMS connect end:" + rst);
+            }
+        });
 
         activity = this;
 
@@ -49,9 +58,6 @@ public class AppStart extends AppCompatActivity {
 
         final View view = View.inflate(this, R.layout.activity_app_start, null);
         setContentView(view);
-
-//        final Intent intent = new Intent(this,NoticeService.class);
-//        startService(intent);
 
         // 渐变展示启动屏
         AlphaAnimation animation = new AlphaAnimation(0.1f, 1.0f);

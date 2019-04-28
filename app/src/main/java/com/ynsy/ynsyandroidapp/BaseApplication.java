@@ -9,6 +9,8 @@ import com.umeng.commonsdk.UMConfigure;
 import com.umeng.message.IUmengRegisterCallback;
 import com.umeng.message.PushAgent;
 
+import org.android.agoo.huawei.HuaWeiRegister;
+
 /**
  * 全局变量类
  */
@@ -19,6 +21,8 @@ public class BaseApplication extends Application {
     public void onCreate() {
         super.onCreate();
         ctx = this.getApplicationContext();
+//        华为Push初始化
+        HuaWeiRegister.register( this);
         //初始化友盟推送
         UMConfigure.init(this, "5c2191cff1f55661a1000823", "Umeng", UMConfigure.DEVICE_TYPE_PHONE, "efb4a1130b7d1a06305f7890b7c68184");
         PushAgent mPushAgent = PushAgent.getInstance(this);

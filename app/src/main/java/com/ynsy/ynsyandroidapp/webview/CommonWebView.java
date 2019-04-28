@@ -90,6 +90,8 @@ public class CommonWebView extends AppCompatActivity {
 //        progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
         webView = (WebView) findViewById(R.id.webviews);
 
+        webView.clearCache(true);//清除缓
+
         //允许JavaScript执行
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);

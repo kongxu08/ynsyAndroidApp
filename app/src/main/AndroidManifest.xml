@@ -27,7 +27,9 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         tools:replace="android:icon,android:theme,android:allowBackup"
         >
-
+        <meta-data
+            android:name="com.huawei.hms.client.appid"
+            android:value="appid=100673865" />
         <activity
             android:name=".AppStart"
             android:launchMode="singleTop"
@@ -42,7 +44,6 @@
         <activity android:name=".finger.FingerLoginActivity" />
         <activity android:name=".webview.CommonWebView"
             android:screenOrientation="portrait"/>
-        <service android:name=".service.NoticeService" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
