@@ -1,37 +1,21 @@
-package com.ynsy.ynsyandroidapp;
+package com.cjwsjy.lhkandroidapp;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 
-import com.ynsy.ynsyandroidapp.finger.FingerLoginActivity;
-import com.ynsy.ynsyandroidapp.service.NoticeService;
 import com.ynsy.ynsyandroidapp.util.L;
-import com.ynsy.ynsyandroidapp.util.SPUtils;
 import com.ynsy.ynsyandroidapp.util.T;
-import com.ynsy.ynsyandroidapp.util.UrlManager;
 import com.ynsy.ynsyandroidapp.webview.CommonDWebView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * 应用启动界面
