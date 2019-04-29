@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.webview;
+package com.cjwsjy.lhkandroidapp.webview;
 
 import android.webkit.JavascriptInterface;
 

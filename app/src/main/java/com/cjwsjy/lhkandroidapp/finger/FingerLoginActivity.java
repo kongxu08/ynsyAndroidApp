@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.finger;
+package com.cjwsjy.lhkandroidapp.finger;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,11 +17,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.ynsy.ynsyandroidapp.R;
-import com.ynsy.ynsyandroidapp.util.L;
-import com.ynsy.ynsyandroidapp.util.SPUtils;
-import com.ynsy.ynsyandroidapp.util.UrlManager;
-import com.ynsy.ynsyandroidapp.webview.CommonWebView;
+import com.cjwsjy.lhkandroidapp.R;
+import com.cjwsjy.lhkandroidapp.util.L;
+import com.cjwsjy.lhkandroidapp.util.SPUtils;
+import com.cjwsjy.lhkandroidapp.util.UrlManager;
+import com.cjwsjy.lhkandroidapp.webview.CommonWebView;
 import com.hsinfo.encrypt.Decrypt;
 
 import java.lang.ref.WeakReference;

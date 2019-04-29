@@ -47,7 +47,7 @@
         <activity android:name=".webview.CommonWebView"
             android:screenOrientation="portrait"/>
         <service android:name=".service.NoticeService" />-->
-        <activity android:name="com.ynsy.ynsyandroidapp.webview.CommonDWebView"
+        <activity android:name=".webview.CommonDWebView"
             android:screenOrientation="portrait"/>
         <provider
             android:name="android.support.v4.content.FileProvider"

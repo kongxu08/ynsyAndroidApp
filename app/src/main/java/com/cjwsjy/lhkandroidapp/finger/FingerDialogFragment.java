@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.finger;
+package com.cjwsjy.lhkandroidapp.finger;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -8,7 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.ynsy.ynsyandroidapp.R;
+import com.cjwsjy.lhkandroidapp.R;
+
 
 public class FingerDialogFragment extends DialogFragment {
 

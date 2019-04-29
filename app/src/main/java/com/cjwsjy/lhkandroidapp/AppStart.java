@@ -10,9 +10,9 @@ import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 
-import com.ynsy.ynsyandroidapp.util.L;
-import com.ynsy.ynsyandroidapp.util.T;
-import com.ynsy.ynsyandroidapp.webview.CommonDWebView;
+import com.cjwsjy.lhkandroidapp.util.L;
+import com.cjwsjy.lhkandroidapp.util.T;
+import com.cjwsjy.lhkandroidapp.webview.CommonDWebView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,6 +73,7 @@ public class AppStart extends AppCompatActivity {
                             }
 
                             startActivity(intent);
+                            activity.finish();
                         } catch (JSONException e) {
                             T.showLong(activity,"openDWebView,参数错误");
                             L.e("openDWebView,参数错误");

@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.util;
+package com.cjwsjy.lhkandroidapp.util;
 
 import android.app.Activity;
 import android.content.Context;

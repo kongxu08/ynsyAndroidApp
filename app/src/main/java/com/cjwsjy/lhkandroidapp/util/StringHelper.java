@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.util;
+package com.cjwsjy.lhkandroidapp.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

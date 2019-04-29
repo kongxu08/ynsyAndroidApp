@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.webview;
+package com.cjwsjy.lhkandroidapp.webview;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -21,17 +21,17 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import com.ynsy.ynsyandroidapp.LoginActivity;
-import com.ynsy.ynsyandroidapp.R;
-import com.ynsy.ynsyandroidapp.util.BadgeNum;
-import com.ynsy.ynsyandroidapp.util.DeviceUtil;
-import com.ynsy.ynsyandroidapp.util.DownloadUtil;
-import com.ynsy.ynsyandroidapp.util.L;
-import com.ynsy.ynsyandroidapp.util.LoadingUtil;
-import com.ynsy.ynsyandroidapp.util.SPUtils;
-import com.ynsy.ynsyandroidapp.util.StringHelper;
-import com.ynsy.ynsyandroidapp.util.T;
-import com.ynsy.ynsyandroidapp.util.UrlManager;
+import com.cjwsjy.lhkandroidapp.R;
+import com.cjwsjy.lhkandroidapp.util.BadgeNum;
+import com.cjwsjy.lhkandroidapp.LoginActivity;
+import com.cjwsjy.lhkandroidapp.util.DeviceUtil;
+import com.cjwsjy.lhkandroidapp.util.DownloadUtil;
+import com.cjwsjy.lhkandroidapp.util.L;
+import com.cjwsjy.lhkandroidapp.util.LoadingUtil;
+import com.cjwsjy.lhkandroidapp.util.SPUtils;
+import com.cjwsjy.lhkandroidapp.util.StringHelper;
+import com.cjwsjy.lhkandroidapp.util.T;
+import com.cjwsjy.lhkandroidapp.util.UrlManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.util;
+package com.cjwsjy.lhkandroidapp.util;
 
 public class UrlManager {
     private static String seeyonHost = "http://116.54.19.198:8086";

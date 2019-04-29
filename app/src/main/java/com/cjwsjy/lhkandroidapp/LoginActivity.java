@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp;
+package com.cjwsjy.lhkandroidapp;
 
 import android.Manifest;
 import android.app.Activity;
@@ -10,8 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.JsonReader;
-import android.util.Xml;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -22,23 +20,17 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
-import com.ynsy.ynsyandroidapp.util.L;
-import com.ynsy.ynsyandroidapp.util.LoadingUtil;
-import com.ynsy.ynsyandroidapp.util.PermissionsUtils;
-import com.ynsy.ynsyandroidapp.util.SPUtils;
-import com.ynsy.ynsyandroidapp.util.StringHelper;
-import com.ynsy.ynsyandroidapp.util.T;
-import com.ynsy.ynsyandroidapp.util.UrlManager;
-import com.ynsy.ynsyandroidapp.webview.CommonWebView;
+import com.cjwsjy.lhkandroidapp.util.L;
+import com.cjwsjy.lhkandroidapp.util.LoadingUtil;
+import com.cjwsjy.lhkandroidapp.util.PermissionsUtils;
+import com.cjwsjy.lhkandroidapp.util.SPUtils;
+import com.cjwsjy.lhkandroidapp.util.StringHelper;
+import com.cjwsjy.lhkandroidapp.util.T;
+import com.cjwsjy.lhkandroidapp.util.UrlManager;
+import com.cjwsjy.lhkandroidapp.webview.CommonWebView;
 import com.hsinfo.encrypt.Decrypt;
 
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParser;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.IOException;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;

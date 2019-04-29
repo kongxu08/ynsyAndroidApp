@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.util;
+package com.cjwsjy.lhkandroidapp.util;
 
 import android.app.Activity;
 import android.view.View;
@@ -6,7 +6,8 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.ynsy.ynsyandroidapp.R;
+import com.cjwsjy.lhkandroidapp.R;
+
 
 public class LoadingUtil {
     public static View creatLoadingView(Activity activity) {

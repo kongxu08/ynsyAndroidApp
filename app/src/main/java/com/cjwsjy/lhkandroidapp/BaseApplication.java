@@ -3,12 +3,6 @@ package com.cjwsjy.lhkandroidapp;
 import android.app.Application;
 import android.content.Context;
 
-import com.umeng.commonsdk.UMConfigure;
-import com.umeng.message.IUmengRegisterCallback;
-import com.umeng.message.PushAgent;
-import com.ynsy.ynsyandroidapp.util.L;
-import com.ynsy.ynsyandroidapp.util.SPUtils;
-
 /**
  * 全局变量类
  */

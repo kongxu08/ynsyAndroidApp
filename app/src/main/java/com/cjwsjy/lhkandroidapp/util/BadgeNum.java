@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.util;
+package com.cjwsjy.lhkandroidapp.util;
 
 import android.app.Activity;
 import android.net.Uri;
@@ -10,7 +10,7 @@ public class BadgeNum {
         try{
             Bundle bunlde =new Bundle();
             bunlde.putString("package", "com.ynsy.ynsyandroidapp");
-            bunlde.putString("class", "com.ynsy.ynsyandroidapp.AppStart");
+            bunlde.putString("class", "AppStart");
             bunlde.putInt("badgenumber",num);
             activity.getContentResolver().call(Uri.parse("content://com.huawei.android.launcher.settings/badge/"), "change_badge", null, bunlde);
 

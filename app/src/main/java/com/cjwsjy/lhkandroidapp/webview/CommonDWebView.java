@@ -1,4 +1,4 @@
-package com.ynsy.ynsyandroidapp.webview;
+package com.cjwsjy.lhkandroidapp.webview;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -30,10 +30,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cjwsjy.lhkandroidapp.R;
-import com.ynsy.ynsyandroidapp.util.LoadingUtil;
-import com.ynsy.ynsyandroidapp.util.PermissionsUtils;
-import com.ynsy.ynsyandroidapp.util.StringHelper;
-import com.ynsy.ynsyandroidapp.util.T;
+import com.cjwsjy.lhkandroidapp.util.LoadingUtil;
+import com.cjwsjy.lhkandroidapp.util.StringHelper;
+import com.cjwsjy.lhkandroidapp.util.PermissionsUtils;
+import com.cjwsjy.lhkandroidapp.util.T;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -66,6 +66,7 @@ public class CommonDWebView extends AppCompatActivity {
             for (String tempUrl : closeWebViews){
                 if (webU.indexOf(tempUrl)!=-1){
                     exit();
+                    return;
                 }
             }
         }
