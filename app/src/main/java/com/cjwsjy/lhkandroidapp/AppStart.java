@@ -13,6 +13,7 @@ import android.view.animation.Animation;
 import com.cjwsjy.lhkandroidapp.util.L;
 import com.cjwsjy.lhkandroidapp.util.T;
 import com.cjwsjy.lhkandroidapp.webview.CommonDWebView;
+import com.ynsy.ynsyandroidapp.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
