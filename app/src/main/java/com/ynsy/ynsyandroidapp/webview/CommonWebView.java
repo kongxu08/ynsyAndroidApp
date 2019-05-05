@@ -322,7 +322,7 @@ public class CommonWebView extends AppCompatActivity {
     @JavascriptInterface
     public void callShare(String msg) {
         if(StringHelper.isEmpty(msg)){
-            Bitmap bitmap = BitmapFactory.decodeResource(activity.getResources(), R.drawable.AppDownload);
+            Bitmap bitmap = BitmapFactory.decodeResource(activity.getResources(), R.drawable.appdownload);
             AndroidShare as =new AndroidShare(activity);
             //分享到微信好友
             as.shareMsg("",null,null,"","",AndroidShare.DRAWABLE,bitmap);

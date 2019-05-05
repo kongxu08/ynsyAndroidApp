@@ -29,7 +29,7 @@ public class JsApi {
     @JavascriptInterface
     public void callShare(String msg) {
         if(StringHelper.isEmpty(msg)){
-            Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.AppDownload);
+            Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.appdownload);
             AndroidShare as =new AndroidShare(context);
             //分享到微信好友
             as.shareMsg("",null,null,"","",AndroidShare.DRAWABLE,bitmap);
