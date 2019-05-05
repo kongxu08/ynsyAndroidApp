@@ -2,11 +2,14 @@ package com.ynsy.ynsyandroidapp.webview;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.CountDownTimer;
 import android.webkit.JavascriptInterface;
 
+import com.ynsy.ynsyandroidapp.R;
 import com.ynsy.ynsyandroidapp.util.AndroidShare;
 import com.ynsy.ynsyandroidapp.util.Base64Util;
+import com.ynsy.ynsyandroidapp.util.StringHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,12 +27,19 @@ public class JsApi {
         context = ctx;
     }
     @JavascriptInterface
-    public void callShare(Object msg) {
-        Bitmap bitmap = Base64Util.base64ToFile(msg.toString());
-        if(bitmap!=null){
+    public void callShare(String msg) {
+        if(StringHelper.isEmpty(msg)){
+            Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.AppDownload);
             AndroidShare as =new AndroidShare(context);
             //分享到微信好友
             as.shareMsg("",null,null,"","",AndroidShare.DRAWABLE,bitmap);
+        }else{
+            Bitmap bitmap = Base64Util.base64ToFile(msg);
+            if(bitmap!=null){
+                AndroidShare as =new AndroidShare(context);
+                //分享到微信好友
+                as.shareMsg("",null,null,"","",AndroidShare.DRAWABLE,bitmap);
+            }
         }
     }
 
@@ -52,7 +62,6 @@ public class JsApi {
     public void testNoArgAsyn(Object arg, CompletionHandler<String> handler) {
         handler.complete( "testNoArgAsyn   called [ asyn call]");
     }
-
 
     //@JavascriptInterface
     //without @JavascriptInterface annotation can't be called
