@@ -1,7 +1,12 @@
 package com.ynsy.ynsyandroidapp.webview;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.CountDownTimer;
 import android.webkit.JavascriptInterface;
+
+import com.ynsy.ynsyandroidapp.util.AndroidShare;
+import com.ynsy.ynsyandroidapp.util.Base64Util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,6 +18,21 @@ import wendu.dsbridge.CompletionHandler;
  */
 
 public class JsApi {
+    Context context;
+    private JsApi(){}
+    public JsApi(Context ctx){
+        context = ctx;
+    }
+    @JavascriptInterface
+    public void callShare(Object msg) {
+        Bitmap bitmap = Base64Util.base64ToFile(msg.toString());
+        if(bitmap!=null){
+            AndroidShare as =new AndroidShare(context);
+            //分享到微信好友
+            as.shareMsg("",null,null,"","",AndroidShare.DRAWABLE,bitmap);
+        }
+    }
+
     @JavascriptInterface
     public String testSyn(Object msg)  {
         return msg + "［syn call］";

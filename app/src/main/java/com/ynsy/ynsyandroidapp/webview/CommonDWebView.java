@@ -81,7 +81,7 @@ public class CommonDWebView extends AppCompatActivity {
 
         // set debug mode
         DWebView.setWebContentsDebuggingEnabled(true);
-        dwebView.addJavascriptObject(new JsApi(), null);
+        dwebView.addJavascriptObject(new JsApi(activity), null);
         dwebView.addJavascriptObject(new JsEchoApi(),"echo");
 
         dwebView.setWebViewClient(new WebViewClient() {
