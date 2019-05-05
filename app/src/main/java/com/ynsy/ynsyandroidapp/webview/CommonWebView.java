@@ -3,6 +3,8 @@ package com.ynsy.ynsyandroidapp.webview;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +25,9 @@ import android.widget.Toast;
 
 import com.ynsy.ynsyandroidapp.LoginActivity;
 import com.ynsy.ynsyandroidapp.R;
+import com.ynsy.ynsyandroidapp.util.AndroidShare;
 import com.ynsy.ynsyandroidapp.util.BadgeNum;
+import com.ynsy.ynsyandroidapp.util.Base64Util;
 import com.ynsy.ynsyandroidapp.util.DeviceUtil;
 import com.ynsy.ynsyandroidapp.util.DownloadUtil;
 import com.ynsy.ynsyandroidapp.util.L;
@@ -313,6 +317,23 @@ public class CommonWebView extends AppCompatActivity {
     public void setBadge(String num) {//对应js中xxx.openWebView("")
         int dbCount = Integer.parseInt(num);
         BadgeNum.setBadgeNum(activity, dbCount);
+    }
+
+    @JavascriptInterface
+    public void callShare(String msg) {
+        if(StringHelper.isEmpty(msg)){
+            Bitmap bitmap = BitmapFactory.decodeResource(activity.getResources(), R.drawable.AppDownload);
+            AndroidShare as =new AndroidShare(activity);
+            //分享到微信好友
+            as.shareMsg("",null,null,"","",AndroidShare.DRAWABLE,bitmap);
+        }else{
+            Bitmap bitmap = Base64Util.base64ToFile(msg);
+            if(bitmap!=null){
+                AndroidShare as =new AndroidShare(activity);
+                //分享到微信好友
+                as.shareMsg("",null,null,"","",AndroidShare.DRAWABLE,bitmap);
+            }
+        }
     }
 
     /**
