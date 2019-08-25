@@ -485,7 +485,7 @@ public class CommonWebView extends AppCompatActivity {
 
                     break;
                 case 24:
-                    T.showShort(activity,"已是最新版本");
+                    T.showShortSuccess(activity,"已是最新版本",true);
                     break;
             }
         }

@@ -42,5 +42,7 @@ dependencies {
     implementation 'com.umeng.umsdk:huawei-umengaccs:1.1.3'
     //DSBridge
     implementation project(path: ':dsbridge')
+    //Toasty
+    implementation 'com.github.GrenderG:Toasty:1.4.2'
 
 }
