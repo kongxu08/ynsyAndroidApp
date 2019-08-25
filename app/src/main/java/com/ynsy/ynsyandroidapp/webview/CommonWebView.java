@@ -30,6 +30,7 @@ import com.ynsy.ynsyandroidapp.util.BadgeNum;
 import com.ynsy.ynsyandroidapp.util.Base64Util;
 import com.ynsy.ynsyandroidapp.util.DeviceUtil;
 import com.ynsy.ynsyandroidapp.util.DownloadUtil;
+import com.ynsy.ynsyandroidapp.util.FileTypeHelper;
 import com.ynsy.ynsyandroidapp.util.L;
 import com.ynsy.ynsyandroidapp.util.LoadingUtil;
 import com.ynsy.ynsyandroidapp.util.SPUtils;
@@ -391,7 +392,8 @@ public class CommonWebView extends AppCompatActivity {
                         uri = Uri.fromFile(file);
                     }
                     intent.addCategory("android.intent.category.DEFAULT");
-                    intent.setDataAndType (uri, "application/pdf");
+                    String type = FileTypeHelper.getMIMEType(file);
+                    intent.setDataAndType (uri, type);
                     startActivity(Intent.createChooser(intent, "打开方式"));
 
                     break;
