@@ -4,6 +4,8 @@ package com.ynsy.ynsyandroidapp.util;
 import android.content.Context;
 import android.widget.Toast;
 
+import es.dmoral.toasty.Toasty;
+
 
 /**
  * Toast统一管理类
@@ -137,5 +139,49 @@ public class T
 
     }
 
+    public static void showLongSuccess(Context context, CharSequence message, boolean showIcon)
 
+    {
+
+        if (isShow)
+
+            Toasty.success(context, message, Toast.LENGTH_LONG,showIcon).show();
+
+    }
+
+    public static void showShortSuccess(Context context, CharSequence message, boolean showIcon)
+
+    {
+
+        if (isShow)
+
+            Toasty.success(context, message, Toast.LENGTH_SHORT,showIcon).show();
+
+    }
+
+    public static void showSuccess(Context context, CharSequence message, int duration, boolean showIcon)
+
+    {
+
+        if (isShow)
+
+            Toasty.success(context, message, duration,showIcon).show();
+
+    }
+
+/*
+        Toasty.error(yourContext, "This is an error toast.", Toast.LENGTH_SHORT, true).show();
+
+        Toasty.success(yourContext, "Success!", Toast.LENGTH_SHORT, true).show();
+
+        Toasty.info(yourContext, "Here is some info for you.", Toast.LENGTH_SHORT, true).show();
+
+        Toasty.warning(yourContext, "Beware of the dog.", Toast.LENGTH_SHORT, true).show();
+
+        Toasty.normal(yourContext, "Normal toast w/o icon").show();
+
+        Toasty.normal(yourContext, "Normal toast w/ icon", yourIconDrawable).show();
+
+        Toasty.custom(yourContext, "I'm a custom Toast", yourIconDrawable, tintColor, duration, withIcon,shouldTint).show();
+*/
 }
