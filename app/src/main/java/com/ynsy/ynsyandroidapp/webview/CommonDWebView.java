@@ -32,9 +32,6 @@ public class CommonDWebView extends AppCompatActivity {
 
     private Activity activity;
 
-    private ValueCallback<Uri> uploadMessage;
-    private ValueCallback<Uri[]> uploadMessageAboveL;
-
     @Override
     public void onBackPressed() {
         String webU = dwebView.getUrl();
