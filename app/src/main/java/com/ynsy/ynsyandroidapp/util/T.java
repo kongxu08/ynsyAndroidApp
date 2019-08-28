@@ -4,6 +4,8 @@ package com.ynsy.ynsyandroidapp.util;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.ynsy.ynsyandroidapp.webview.CommonWebView;
+
 import es.dmoral.toasty.Toasty;
 
 
@@ -141,13 +143,13 @@ public class T
 
     public static void showLongSuccess(Context context, CharSequence message, boolean showIcon)
 
-    {
+{
 
-        if (isShow)
+    if (isShow)
 
-            Toasty.success(context, message, Toast.LENGTH_LONG,showIcon).show();
+        Toasty.success(context, message, Toast.LENGTH_LONG,showIcon).show();
 
-    }
+}
 
     public static void showShortSuccess(Context context, CharSequence message, boolean showIcon)
 
@@ -166,6 +168,66 @@ public class T
         if (isShow)
 
             Toasty.success(context, message, duration,showIcon).show();
+
+    }
+
+    public static void showLongInfo(Context context, CharSequence message, boolean showIcon)
+
+    {
+
+        if (isShow)
+
+            Toasty.info(context, message, Toast.LENGTH_LONG,showIcon).show();
+
+    }
+
+    public static void showShortInfo(Context context, CharSequence message, boolean showIcon)
+
+    {
+
+        if (isShow)
+
+            Toasty.info(context, message, Toast.LENGTH_SHORT,showIcon).show();
+
+    }
+
+    public static void showInfo(Context context, CharSequence message, int duration, boolean showIcon)
+
+    {
+
+        if (isShow)
+
+            Toasty.info(context, message, duration,showIcon).show();
+
+    }
+
+    public static void showLongError(Context context, CharSequence message, boolean showIcon)
+
+    {
+
+        if (isShow)
+
+            Toasty.error(context, message, Toast.LENGTH_LONG,showIcon).show();
+
+    }
+
+    public static void showShortError(Context context, CharSequence message, boolean showIcon)
+
+    {
+
+        if (isShow)
+
+            Toasty.error(context, message, Toast.LENGTH_SHORT,showIcon).show();
+
+    }
+
+    public static void showError(Context context, CharSequence message, int duration, boolean showIcon)
+
+    {
+
+        if (isShow)
+
+            Toasty.error(context, message, duration,showIcon).show();
 
     }
 

@@ -1,8 +1,14 @@
 package com.ynsy.ynsyandroidapp.webview;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -11,17 +17,20 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import com.ynsy.ynsyandroidapp.LoginActivity;
 import com.ynsy.ynsyandroidapp.R;
@@ -33,6 +42,7 @@ import com.ynsy.ynsyandroidapp.util.DownloadUtil;
 import com.ynsy.ynsyandroidapp.util.FileTypeHelper;
 import com.ynsy.ynsyandroidapp.util.L;
 import com.ynsy.ynsyandroidapp.util.LoadingUtil;
+import com.ynsy.ynsyandroidapp.util.PermissionsUtils;
 import com.ynsy.ynsyandroidapp.util.SPUtils;
 import com.ynsy.ynsyandroidapp.util.StringHelper;
 import com.ynsy.ynsyandroidapp.util.T;
@@ -48,7 +58,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import okhttp3.FormBody;
@@ -59,6 +71,8 @@ import okhttp3.Response;
 public class CommonWebView extends AppCompatActivity {
 
     private Activity activity;
+
+    private static boolean back=false;
 
     ProgressDialog progressDialog;
     View loadingWebView;
@@ -72,6 +86,12 @@ public class CommonWebView extends AppCompatActivity {
 
     private String versionNumber;
     private String changeContent;
+
+    private String[] permissions = new String[]{Manifest.permission.CAMERA };
+    private Uri imageUri;
+    private int FILE_CHOOSER_RESULT_CODE=1;
+    private ValueCallback<Uri> uploadMessage;
+    private ValueCallback<Uri[]> uploadMessageAboveL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,10 +125,6 @@ public class CommonWebView extends AppCompatActivity {
         webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);//设置缓存模式
 
         webView.addJavascriptInterface(this,"android");
-
-        webView.setWebChromeClient(new WebChromeClient() {
-
-        });
 
         webView.setWebViewClient(new WebViewClient() {
 
@@ -156,7 +172,7 @@ public class CommonWebView extends AppCompatActivity {
                 result = parseurl(url);
 
                 if (result == 1) {
-                    Toast.makeText(CommonWebView.this, "开始下载附件...", Toast.LENGTH_SHORT).show();
+                    T.showShortInfo(activity, "开始下载附件...",true);
                     result = url.lastIndexOf(".");
                     suffix = url.substring(result + 1, url.length());
 
@@ -198,8 +214,23 @@ public class CommonWebView extends AppCompatActivity {
                     loadingWebView.setVisibility(View.VISIBLE);
                 }
             }
+            //For Android  >= 4.1
+            public void openFileChooser(ValueCallback<Uri> valueCallback, String acceptType, String capture) {
+                uploadMessage = valueCallback;
+                PermissionsUtils.getInstance().chekPermissions(activity, permissions, permissionsResult);
+            }
+
+            // For Android >= 5.0
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
+                uploadMessageAboveL = filePathCallback;
+
+                PermissionsUtils.getInstance().chekPermissions(activity, permissions, permissionsResult);
+                return true;
+            }
         });
         webView.loadUrl(openUrl);
+//        webView.loadUrl("file:///android_asset/js-call-native.html");
 
         //开启线程 保存友盟推送的deviceToken
         new Thread(){
@@ -225,6 +256,142 @@ public class CommonWebView extends AppCompatActivity {
 
 
     }
+
+    //创建监听权限的接口对象
+    PermissionsUtils.IPermissionsResult permissionsResult = new PermissionsUtils.IPermissionsResult() {
+        @Override
+        public void passPermissons() {
+            take();
+        }
+
+        @Override
+        public void forbitPermissons() {
+            T.showShortError(activity.getApplicationContext(),"获取摄像头权限失败无法启动相机拍照功能",true);
+        }
+    };
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        //就多一个参数this
+        PermissionsUtils.getInstance().onRequestPermissionsResult(this, requestCode, permissions, grantResults);
+    }
+
+    private void take(){
+        File imageStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "ynsy");
+        // Create the storage directory if it does not exist
+        if (! imageStorageDir.exists()){
+            imageStorageDir.mkdirs();
+        }
+        File file = new File(imageStorageDir + File.separator + "IMG_" + String.valueOf(System.currentTimeMillis()) + ".jpg");
+        imageUri = Uri.fromFile(file);
+
+        final List<Intent> cameraIntents = new ArrayList<Intent>();
+        final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        final PackageManager packageManager = getPackageManager();
+        final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
+        for(ResolveInfo res : listCam) {
+            final String packageName = res.activityInfo.packageName;
+            final Intent i = new Intent(captureIntent);
+            i.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            i.setPackage(packageName);
+            i.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+            cameraIntents.add(i);
+
+        }
+        Intent imgIntent= new Intent(Intent.ACTION_PICK);
+        imgIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+
+        Intent chooserIntent = Intent.createChooser(imgIntent,"请选择");
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[]{}));
+        this.startActivityForResult(chooserIntent, FILE_CHOOSER_RESULT_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //主动取消
+        if(resultCode == Activity.RESULT_CANCELED){
+            if (null != uploadMessageAboveL) {
+                uploadMessageAboveL.onReceiveValue(null);
+                uploadMessageAboveL = null;
+            }
+            if (null != uploadMessage) {
+                uploadMessage.onReceiveValue(null);
+                uploadMessage = null;
+            }
+            return;
+        }
+        if(requestCode==FILE_CHOOSER_RESULT_CODE)
+        {
+            if (null == uploadMessage && null == uploadMessageAboveL) return;
+            Uri result = data == null || resultCode != RESULT_OK ? null : data.getData();
+            if (uploadMessageAboveL != null) {
+                onActivityResultAboveL(requestCode, resultCode, data);
+            }
+            else if (uploadMessage != null) {
+                if(result==null){
+                    uploadMessage.onReceiveValue(imageUri);
+                    uploadMessage = null;
+                }else {
+                    uploadMessage.onReceiveValue(result);
+                    uploadMessage = null;
+                }
+
+
+            }
+        }
+    }
+
+    @SuppressWarnings("null")
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void onActivityResultAboveL(int requestCode, int resultCode, Intent data) {
+        //主动取消
+        if(resultCode == Activity.RESULT_CANCELED){
+            if (null != uploadMessageAboveL) {
+                uploadMessageAboveL.onReceiveValue(null);
+                uploadMessageAboveL = null;
+            }
+            if (null != uploadMessage) {
+                uploadMessage.onReceiveValue(null);
+                uploadMessage = null;
+            }
+            return;
+        }
+        //通过FileChooser选择器打开
+        if (requestCode == FILE_CHOOSER_RESULT_CODE) {
+            Uri[] results = null;
+            if (resultCode == Activity.RESULT_OK) {
+                if (data == null) {
+                    results = new Uri[]{imageUri};
+                } else {
+                    String dataString = data.getDataString();
+                    ClipData clipData = data.getClipData();
+
+                    if (clipData != null) {
+                        results = new Uri[clipData.getItemCount()];
+                        for (int i = 0; i < clipData.getItemCount(); i++) {
+                            ClipData.Item item = clipData.getItemAt(i);
+                            results[i] = item.getUri();
+                        }
+                    }
+
+                    if (dataString != null)
+                        results = new Uri[]{Uri.parse(dataString)};
+                }
+            }
+            if(results!=null){
+                uploadMessageAboveL.onReceiveValue(results);
+                uploadMessageAboveL = null;
+            }else{
+                results = new Uri[]{imageUri};
+                uploadMessageAboveL.onReceiveValue(results);
+                uploadMessageAboveL = null;
+            }
+        }
+
+        return;
+    }
+
     //双击返回退出标识
     private static boolean isExit = false;
     /*
@@ -232,6 +399,20 @@ public class CommonWebView extends AppCompatActivity {
     * */
     @Override
     public void onBackPressed() {
+
+        if(back){
+            return;
+        }
+
+        if (null != uploadMessageAboveL) {
+            uploadMessageAboveL.onReceiveValue(null);
+            uploadMessageAboveL = null;
+        }
+        if (null != uploadMessage) {
+            uploadMessage.onReceiveValue(null);
+            uploadMessage = null;
+        }
+
         String webU = webView.getUrl();
         if(closeWebViews.length>5){
             super.onBackPressed();
@@ -257,7 +438,7 @@ public class CommonWebView extends AppCompatActivity {
     private void exit() {
         if (!isExit) {
             isExit = true;
-            Toast.makeText(getApplicationContext(), "再按一次退出", Toast.LENGTH_SHORT).show();
+            T.showShortInfo(getApplicationContext(), "再按一次退出", true);
             //利用handler延迟发送更改状态信息
             handler.sendEmptyMessageDelayed(0, 2000);
         } else {
@@ -311,6 +492,15 @@ public class CommonWebView extends AppCompatActivity {
     @JavascriptInterface
     public void updateApp() {
         checkVersion();
+    }
+
+    //back是否生效
+    @JavascriptInterface
+    public void back(String value) {
+        if(value.equals("false"))
+            CommonWebView.back=false;
+        else
+            CommonWebView.back=true;
     }
 
     //设置桌面角标
@@ -375,7 +565,7 @@ public class CommonWebView extends AppCompatActivity {
             super.handleMessage(msg);
             switch (msg.what){
                 case 0:
-                    T.showLong(activity,"下载完成");
+                    T.showLongSuccess(activity,"下载完成",true);
                     if(progressDialog!=null){
                         progressDialog.dismiss();
                     }
@@ -398,7 +588,7 @@ public class CommonWebView extends AppCompatActivity {
 
                     break;
                 case 1:
-                    T.showLong(activity,"下载失败");
+                    T.showLongError(activity,"下载失败",true);
                     if(progressDialog!=null){
                         progressDialog.dismiss();
                     }
@@ -460,7 +650,7 @@ public class CommonWebView extends AppCompatActivity {
 
                     break;
                 case 23:
-                    T.showLong(activity,"下载完成");
+                    T.showLongSuccess(activity,"下载完成",true);
                     if(progressDialog!=null){
                         progressDialog.dismiss();
                     }
