@@ -97,16 +97,16 @@ public class AppStart extends AppCompatActivity {
      * 跳转到...
      */
     private void redirectTo() {
-        String username = SPUtils.get(this,"username","").toString();
-        if(username.equals("")){
+//        String username = SPUtils.get(this,"username","").toString();
+//        if(username.equals("")){
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             finish();
-        }else{
-            Intent intent = new Intent(this, FingerLoginActivity.class);
-            startActivity(intent);
-            finish();
-        }
+//        }else{
+//            Intent intent = new Intent(this, FingerLoginActivity.class);
+//            startActivity(intent);
+//            finish();
+//        }
     }
 
     Runnable run = new Runnable() {

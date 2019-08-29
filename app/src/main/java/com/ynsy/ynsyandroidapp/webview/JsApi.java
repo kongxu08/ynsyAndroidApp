@@ -9,6 +9,8 @@ import android.webkit.JavascriptInterface;
 import com.ynsy.ynsyandroidapp.R;
 import com.ynsy.ynsyandroidapp.util.AndroidShare;
 import com.ynsy.ynsyandroidapp.util.Base64Util;
+import com.ynsy.ynsyandroidapp.util.L;
+import com.ynsy.ynsyandroidapp.util.SPUtils;
 import com.ynsy.ynsyandroidapp.util.StringHelper;
 
 import org.json.JSONException;
@@ -88,5 +90,22 @@ public class JsApi {
 
             }
         }.start();
+    }
+
+    @JavascriptInterface
+    public String getLoginUserId(Object obj) {
+        return "0d8adc8eed4845a69ec37e3689cd622f";
+    }
+
+    @JavascriptInterface
+    public String getLoginUserInfo(Object obj) {
+        String msg = SPUtils.get(context, "userInfo", "{}").toString();
+        return msg;
+    }
+
+    @JavascriptInterface
+    public String getLoginToken(Object obj) {
+        String msg = SPUtils.get(context, "token", "").toString();
+        return msg;
     }
 }

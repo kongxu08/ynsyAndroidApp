@@ -24,6 +24,8 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -72,7 +74,7 @@ public class CommonWebView extends AppCompatActivity {
 
     private Activity activity;
 
-    private static boolean back=false;
+    private static boolean back = false;
 
     ProgressDialog progressDialog;
     View loadingWebView;
@@ -81,15 +83,16 @@ public class CommonWebView extends AppCompatActivity {
     private String url;
 
     private String username;
+    private String token;
 
     private String[] closeWebViews;
 
     private String versionNumber;
     private String changeContent;
 
-    private String[] permissions = new String[]{Manifest.permission.CAMERA };
+    private String[] permissions = new String[]{Manifest.permission.CAMERA};
     private Uri imageUri;
-    private int FILE_CHOOSER_RESULT_CODE=1;
+    private int FILE_CHOOSER_RESULT_CODE = 1;
     private ValueCallback<Uri> uploadMessage;
     private ValueCallback<Uri[]> uploadMessageAboveL;
 
@@ -102,8 +105,12 @@ public class CommonWebView extends AppCompatActivity {
         activity = this;
         loadingWebView = LoadingUtil.creatWebLoadingView(activity);
 
-        username = SPUtils.get(activity,"username","").toString();
-
+        username = SPUtils.get(activity, "username", "").toString();
+        String userInfo = SPUtils.get(activity, "userInfo", "").toString();
+        token = SPUtils.get(activity, "token", "").toString();
+        L.i(token);
+        L.i(userInfo);
+        L.i(username);
         Intent intent = getIntent();
         String openUrl = intent.getStringExtra("url");
         url = openUrl;
@@ -124,7 +131,7 @@ public class CommonWebView extends AppCompatActivity {
         webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
         webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);//设置缓存模式
 
-        webView.addJavascriptInterface(this,"android");
+        webView.addJavascriptInterface(this, "android");
 
         webView.setWebViewClient(new WebViewClient() {
 
@@ -172,7 +179,7 @@ public class CommonWebView extends AppCompatActivity {
                 result = parseurl(url);
 
                 if (result == 1) {
-                    T.showShortInfo(activity, "开始下载附件...",true);
+                    T.showShortInfo(activity, "开始下载附件...", true);
                     result = url.lastIndexOf(".");
                     suffix = url.substring(result + 1, url.length());
 
@@ -186,18 +193,18 @@ public class CommonWebView extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                String username = SPUtils.get(activity,"username","").toString();
+                String username = SPUtils.get(activity, "username", "").toString();
                 JSONObject jsonObject = new JSONObject();
                 try {
-                    jsonObject.put("userName",username);
-                    String txlStr =SPUtils.get(activity,"TXL","").toString();
+                    jsonObject.put("userName", username);
+                    String txlStr = SPUtils.get(activity, "TXL", "").toString();
                     JSONObject txlJson = new JSONObject(txlStr);
-                    jsonObject.put("contactBook",txlJson);
-                    jsonObject.put("softVersion",DeviceUtil.getReleaseVersion(activity));
+                    jsonObject.put("contactBook", txlJson);
+                    jsonObject.put("softVersion", DeviceUtil.getReleaseVersion(activity));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                view.loadUrl("javascript:window._NativeActivate_('"+jsonObject.toString()+"')");
+                view.loadUrl("javascript:window._NativeActivate_('" + jsonObject.toString() + "')");
             }
 
         });
@@ -214,6 +221,7 @@ public class CommonWebView extends AppCompatActivity {
                     loadingWebView.setVisibility(View.VISIBLE);
                 }
             }
+
             //For Android  >= 4.1
             public void openFileChooser(ValueCallback<Uri> valueCallback, String acceptType, String capture) {
                 uploadMessage = valueCallback;
@@ -229,11 +237,16 @@ public class CommonWebView extends AppCompatActivity {
                 return true;
             }
         });
+
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        cookieManager.setCookie(url, String.format("http://10.6.180.21", "token", token));
+
+
         webView.loadUrl(openUrl);
-//        webView.loadUrl("file:///android_asset/js-call-native.html");
 
         //开启线程 保存友盟推送的deviceToken
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 initUserDevice();
@@ -245,10 +258,10 @@ public class CommonWebView extends AppCompatActivity {
             Date today = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             today = sdf.parse(sdf.format(today));
-            long tipsUpdateValue = (long)SPUtils.get(activity,"tipsUpdateValue",0l);
-            if(today.getTime()>tipsUpdateValue){
+            long tipsUpdateValue = (long) SPUtils.get(activity, "tipsUpdateValue", 0l);
+            if (today.getTime() > tipsUpdateValue) {
                 checkVersion();
-                SPUtils.put(activity,"tipsUpdateValue",today.getTime());
+                SPUtils.put(activity, "tipsUpdateValue", today.getTime());
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -256,6 +269,9 @@ public class CommonWebView extends AppCompatActivity {
 
 
     }
+
+
+
 
     //创建监听权限的接口对象
     PermissionsUtils.IPermissionsResult permissionsResult = new PermissionsUtils.IPermissionsResult() {
@@ -266,21 +282,22 @@ public class CommonWebView extends AppCompatActivity {
 
         @Override
         public void forbitPermissons() {
-            T.showShortError(activity.getApplicationContext(),"获取摄像头权限失败无法启动相机拍照功能",true);
+            T.showShortError(activity.getApplicationContext(), "获取摄像头权限失败无法启动相机拍照功能", true);
         }
     };
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         //就多一个参数this
         PermissionsUtils.getInstance().onRequestPermissionsResult(this, requestCode, permissions, grantResults);
     }
 
-    private void take(){
+    private void take() {
         File imageStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "ynsy");
         // Create the storage directory if it does not exist
-        if (! imageStorageDir.exists()){
+        if (!imageStorageDir.exists()) {
             imageStorageDir.mkdirs();
         }
         File file = new File(imageStorageDir + File.separator + "IMG_" + String.valueOf(System.currentTimeMillis()) + ".jpg");
@@ -290,7 +307,7 @@ public class CommonWebView extends AppCompatActivity {
         final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         final PackageManager packageManager = getPackageManager();
         final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
-        for(ResolveInfo res : listCam) {
+        for (ResolveInfo res : listCam) {
             final String packageName = res.activityInfo.packageName;
             final Intent i = new Intent(captureIntent);
             i.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
@@ -299,10 +316,10 @@ public class CommonWebView extends AppCompatActivity {
             cameraIntents.add(i);
 
         }
-        Intent imgIntent= new Intent(Intent.ACTION_PICK);
+        Intent imgIntent = new Intent(Intent.ACTION_PICK);
         imgIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
 
-        Intent chooserIntent = Intent.createChooser(imgIntent,"请选择");
+        Intent chooserIntent = Intent.createChooser(imgIntent, "请选择");
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[]{}));
         this.startActivityForResult(chooserIntent, FILE_CHOOSER_RESULT_CODE);
     }
@@ -310,7 +327,7 @@ public class CommonWebView extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //主动取消
-        if(resultCode == Activity.RESULT_CANCELED){
+        if (resultCode == Activity.RESULT_CANCELED) {
             if (null != uploadMessageAboveL) {
                 uploadMessageAboveL.onReceiveValue(null);
                 uploadMessageAboveL = null;
@@ -321,18 +338,16 @@ public class CommonWebView extends AppCompatActivity {
             }
             return;
         }
-        if(requestCode==FILE_CHOOSER_RESULT_CODE)
-        {
+        if (requestCode == FILE_CHOOSER_RESULT_CODE) {
             if (null == uploadMessage && null == uploadMessageAboveL) return;
             Uri result = data == null || resultCode != RESULT_OK ? null : data.getData();
             if (uploadMessageAboveL != null) {
                 onActivityResultAboveL(requestCode, resultCode, data);
-            }
-            else if (uploadMessage != null) {
-                if(result==null){
+            } else if (uploadMessage != null) {
+                if (result == null) {
                     uploadMessage.onReceiveValue(imageUri);
                     uploadMessage = null;
-                }else {
+                } else {
                     uploadMessage.onReceiveValue(result);
                     uploadMessage = null;
                 }
@@ -346,7 +361,7 @@ public class CommonWebView extends AppCompatActivity {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void onActivityResultAboveL(int requestCode, int resultCode, Intent data) {
         //主动取消
-        if(resultCode == Activity.RESULT_CANCELED){
+        if (resultCode == Activity.RESULT_CANCELED) {
             if (null != uploadMessageAboveL) {
                 uploadMessageAboveL.onReceiveValue(null);
                 uploadMessageAboveL = null;
@@ -379,10 +394,10 @@ public class CommonWebView extends AppCompatActivity {
                         results = new Uri[]{Uri.parse(dataString)};
                 }
             }
-            if(results!=null){
+            if (results != null) {
                 uploadMessageAboveL.onReceiveValue(results);
                 uploadMessageAboveL = null;
-            }else{
+            } else {
                 results = new Uri[]{imageUri};
                 uploadMessageAboveL.onReceiveValue(results);
                 uploadMessageAboveL = null;
@@ -394,13 +409,14 @@ public class CommonWebView extends AppCompatActivity {
 
     //双击返回退出标识
     private static boolean isExit = false;
+
     /*
-    * 双击返回退出
-    * */
+     * 双击返回退出
+     * */
     @Override
     public void onBackPressed() {
 
-        if(back){
+        if (back) {
             return;
         }
 
@@ -414,11 +430,11 @@ public class CommonWebView extends AppCompatActivity {
         }
 
         String webU = webView.getUrl();
-        if(closeWebViews.length>5){
+        if (closeWebViews.length > 5) {
             super.onBackPressed();
-        }else{
-            for (String tempUrl : closeWebViews){
-                if (webU.equals(tempUrl)){
+        } else {
+            for (String tempUrl : closeWebViews) {
+                if (webU.equals(tempUrl)) {
                     exit();
                     return;
                 }
@@ -461,14 +477,14 @@ public class CommonWebView extends AppCompatActivity {
     @JavascriptInterface
     public void logOut() {
         //开启线程 删除友盟推送的deviceToken
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 deleteUserDevice();
             }
         }.start();
-        SPUtils.remove(this,"username");
-        SPUtils.remove(this,"password");
+        SPUtils.remove(this, "username");
+        SPUtils.remove(this, "password");
         Intent intent = new Intent(CommonWebView.this, LoginActivity.class);
         startActivity(intent);
         finish();
@@ -497,10 +513,10 @@ public class CommonWebView extends AppCompatActivity {
     //back是否生效
     @JavascriptInterface
     public void back(String value) {
-        if(value.equals("false"))
-            CommonWebView.back=false;
+        if (value.equals("false"))
+            CommonWebView.back = false;
         else
-            CommonWebView.back=true;
+            CommonWebView.back = true;
     }
 
     //设置桌面角标
@@ -512,17 +528,17 @@ public class CommonWebView extends AppCompatActivity {
 
     @JavascriptInterface
     public void callShare(String msg) {
-        if(StringHelper.isEmpty(msg)){
+        if (StringHelper.isEmpty(msg)) {
             Bitmap bitmap = BitmapFactory.decodeResource(activity.getResources(), R.drawable.appdownload);
-            AndroidShare as =new AndroidShare(activity);
+            AndroidShare as = new AndroidShare(activity);
             //分享到微信好友
-            as.shareMsg("",null,null,"","",AndroidShare.DRAWABLE,bitmap);
-        }else{
+            as.shareMsg("", null, null, "", "", AndroidShare.DRAWABLE, bitmap);
+        } else {
             Bitmap bitmap = Base64Util.base64ToFile(msg);
-            if(bitmap!=null){
-                AndroidShare as =new AndroidShare(activity);
+            if (bitmap != null) {
+                AndroidShare as = new AndroidShare(activity);
                 //分享到微信好友
-                as.shareMsg("",null,null,"","",AndroidShare.DRAWABLE,bitmap);
+                as.shareMsg("", null, null, "", "", AndroidShare.DRAWABLE, bitmap);
             }
         }
     }
@@ -538,9 +554,10 @@ public class CommonWebView extends AppCompatActivity {
                         //下载完成进行相关逻辑操作
                         Message msg = mHandler.obtainMessage();
                         msg.what = 0;
-                        msg.obj=file;
+                        msg.obj = file;
                         mHandler.sendMessage(msg);
                     }
+
                     @Override
                     public void onDownloading(int progress) {
                         Message msg = mHandler.obtainMessage();
@@ -548,6 +565,7 @@ public class CommonWebView extends AppCompatActivity {
                         msg.arg1 = progress;
                         mHandler.sendMessage(msg);
                     }
+
                     @Override
                     public void onDownloadFailed(Exception e) {
                         //下载异常进行相关提示操作
@@ -559,14 +577,14 @@ public class CommonWebView extends AppCompatActivity {
                 });
     }
 
-    Handler mHandler= new Handler(){
+    Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case 0:
-                    T.showLongSuccess(activity,"下载完成",true);
-                    if(progressDialog!=null){
+                    T.showLongSuccess(activity, "下载完成", true);
+                    if (progressDialog != null) {
                         progressDialog.dismiss();
                     }
                     File file = (File) msg.obj;
@@ -583,18 +601,18 @@ public class CommonWebView extends AppCompatActivity {
                     }
                     intent.addCategory("android.intent.category.DEFAULT");
                     String type = FileTypeHelper.getMIMEType(file);
-                    intent.setDataAndType (uri, type);
+                    intent.setDataAndType(uri, type);
                     startActivity(Intent.createChooser(intent, "打开方式"));
 
                     break;
                 case 1:
-                    T.showLongError(activity,"下载失败",true);
-                    if(progressDialog!=null){
+                    T.showLongError(activity, "下载失败", true);
+                    if (progressDialog != null) {
                         progressDialog.dismiss();
                     }
                     break;
                 case 11:
-                    if(progressDialog!=null){
+                    if (progressDialog != null) {
                         progressDialog.setProgress(msg.arg1);
                     }
                     break;
@@ -623,7 +641,7 @@ public class CommonWebView extends AppCompatActivity {
                                 }
                             }).create();
                     dialog.show();*/
-                     new SweetAlertDialog(activity)
+                    new SweetAlertDialog(activity)
                             .setTitleText("发现新版本")
                             .setContentText(changeContent)
                             .setConfirmText("下载")
@@ -650,8 +668,8 @@ public class CommonWebView extends AppCompatActivity {
 
                     break;
                 case 23:
-                    T.showLongSuccess(activity,"下载完成",true);
-                    if(progressDialog!=null){
+                    T.showLongSuccess(activity, "下载完成", true);
+                    if (progressDialog != null) {
                         progressDialog.dismiss();
                     }
                     File apkfile = (File) msg.obj;
@@ -675,7 +693,7 @@ public class CommonWebView extends AppCompatActivity {
 
                     break;
                 case 24:
-                    T.showShortSuccess(activity,"已是最新版本",true);
+                    T.showShortSuccess(activity, "已是最新版本", true);
                     break;
             }
         }
@@ -730,52 +748,52 @@ public class CommonWebView extends AppCompatActivity {
         return 0;
     }
 
-    private void appendCloseWebUrl(){
-        if(closeWebViews==null){
+    private void appendCloseWebUrl() {
+        if (closeWebViews == null) {
             closeWebViews = new String[5];
-            closeWebViews[0]=UrlManager.appRemoteHomePageUrl;
-            closeWebViews[1]=UrlManager.appRemoteHomePageUrl+"app";
-            closeWebViews[2]=UrlManager.appRemoteHomePageUrl+"todo";
-            closeWebViews[3]=UrlManager.appRemoteHomePageUrl+"contact";
-            closeWebViews[4]=UrlManager.appRemoteHomePageUrl+"account";
-        }else{
-            String[] strs = new String[closeWebViews.length+5];
-            for (int i = 0; i <closeWebViews.length ; i++) {
-                strs[i]=closeWebViews[i];
+            closeWebViews[0] = UrlManager.appRemoteHomePageUrl;
+            closeWebViews[1] = UrlManager.appRemoteHomePageUrl + "app";
+            closeWebViews[2] = UrlManager.appRemoteHomePageUrl + "todo";
+            closeWebViews[3] = UrlManager.appRemoteHomePageUrl + "contact";
+            closeWebViews[4] = UrlManager.appRemoteHomePageUrl + "account";
+        } else {
+            String[] strs = new String[closeWebViews.length + 5];
+            for (int i = 0; i < closeWebViews.length; i++) {
+                strs[i] = closeWebViews[i];
             }
-            strs[closeWebViews.length]=UrlManager.appRemoteHomePageUrl;
-            strs[closeWebViews.length+1]=UrlManager.appRemoteHomePageUrl+"app";
-            strs[closeWebViews.length+2]=UrlManager.appRemoteHomePageUrl+"todo";
-            strs[closeWebViews.length+3]=UrlManager.appRemoteHomePageUrl+"contact";
-            strs[closeWebViews.length+4]=UrlManager.appRemoteHomePageUrl+"account";
-            closeWebViews=strs;
+            strs[closeWebViews.length] = UrlManager.appRemoteHomePageUrl;
+            strs[closeWebViews.length + 1] = UrlManager.appRemoteHomePageUrl + "app";
+            strs[closeWebViews.length + 2] = UrlManager.appRemoteHomePageUrl + "todo";
+            strs[closeWebViews.length + 3] = UrlManager.appRemoteHomePageUrl + "contact";
+            strs[closeWebViews.length + 4] = UrlManager.appRemoteHomePageUrl + "account";
+            closeWebViews = strs;
         }
     }
 
-    public void initUserDevice(){
-        String userInfo = SPUtils.get(activity,"userInfo","").toString();
-        String deviceToken = SPUtils.get(activity,"deviceToken","").toString();
-        if(!StringHelper.isEmpty(userInfo) && !StringHelper.isEmpty(deviceToken)){
+    public void initUserDevice() {
+        String userInfo = SPUtils.get(activity, "userInfo", "").toString();
+        String deviceToken = SPUtils.get(activity, "deviceToken", "").toString();
+        if (!StringHelper.isEmpty(userInfo) && !StringHelper.isEmpty(deviceToken)) {
             OkHttpClient client = new OkHttpClient();
-            try{
-                JSONObject userInfoJson=new JSONObject(userInfo);
+            try {
+                JSONObject userInfoJson = new JSONObject(userInfo);
                 FormBody formBody = new FormBody.Builder()
-                        .add("userName",userInfoJson.getString("loginName"))
-                        .add("userDisplayName",userInfoJson.getString("name"))
-                        .add("devicesId",SPUtils.get(activity,"deviceToken","").toString())
-                        .add("devicesType","android")
-                        .add("userId",userInfoJson.getString("id"))
-                        .add("machine",DeviceUtil.getManufacturer()+"_"+DeviceUtil.getDeviceModel())
-                        .add("os",DeviceUtil.getSystemVersion())
-                        .add("appVersion",DeviceUtil.getReleaseVersion(activity)).build();
+                        .add("userName", userInfoJson.getString("loginName"))
+                        .add("userDisplayName", userInfoJson.getString("name"))
+                        .add("devicesId", SPUtils.get(activity, "deviceToken", "").toString())
+                        .add("devicesType", "android")
+                        .add("userId", userInfoJson.getString("id"))
+                        .add("machine", DeviceUtil.getManufacturer() + "_" + DeviceUtil.getDeviceModel())
+                        .add("os", DeviceUtil.getSystemVersion())
+                        .add("appVersion", DeviceUtil.getReleaseVersion(activity)).build();
                 Request request = new Request.Builder()
                         .url(UrlManager.userDeviceSaveOrUpdateUrl)
                         .post(formBody)
                         .build();
                 Response response = client.newCall(request).execute();
-                if(response.isSuccessful()){
+                if (response.isSuccessful()) {
                     L.i("用户devicesToken绑定成功");
-                }else{
+                } else {
                     L.i("用户devicesToken绑定失败");
                 }
             } catch (JSONException e) {
@@ -786,28 +804,28 @@ public class CommonWebView extends AppCompatActivity {
         }
     }
 
-    public void deleteUserDevice(){
-            try{
-                OkHttpClient client = new OkHttpClient();
-                FormBody formBody = new FormBody.Builder()
-                        .add("userName",username).build();
-                Request request = new Request.Builder()
-                        .url(UrlManager.userDeviceDeleteUrl)
-                        .post(formBody)
-                        .build();
-                Response response = client.newCall(request).execute();
-                if(response.isSuccessful()){
-                    L.i("用户devicesToken解绑成功");
-                }else{
-                    L.i("用户devicesToken解绑失败");
-                }
-            }catch (IOException e) {
-                e.printStackTrace();
+    public void deleteUserDevice() {
+        try {
+            OkHttpClient client = new OkHttpClient();
+            FormBody formBody = new FormBody.Builder()
+                    .add("userName", username).build();
+            Request request = new Request.Builder()
+                    .url(UrlManager.userDeviceDeleteUrl)
+                    .post(formBody)
+                    .build();
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                L.i("用户devicesToken解绑成功");
+            } else {
+                L.i("用户devicesToken解绑失败");
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
-    private void checkVersion(){
+    private void checkVersion() {
         new Thread(run).start();
     }
 
@@ -829,13 +847,13 @@ public class CommonWebView extends AppCompatActivity {
                     versionNumber = rJson.getString("versionNumber");
                     changeContent = rJson.getString("changeContent");
                     String curVersion = DeviceUtil.getReleaseVersion(activity);
-                    if(!versionNumber.equals(curVersion)){
-                       mHandler.sendEmptyMessage(22);
-                    }else{
+                    if (!versionNumber.equals(curVersion)) {
+                        mHandler.sendEmptyMessage(22);
+                    } else {
                         mHandler.sendEmptyMessage(24);
                     }
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -852,9 +870,10 @@ public class CommonWebView extends AppCompatActivity {
                         //下载完成进行相关逻辑操作
                         Message msg = mHandler.obtainMessage();
                         msg.what = 23;
-                        msg.obj=file;
+                        msg.obj = file;
                         mHandler.sendMessage(msg);
                     }
+
                     @Override
                     public void onDownloading(int progress) {
                         Message msg = mHandler.obtainMessage();
@@ -862,6 +881,7 @@ public class CommonWebView extends AppCompatActivity {
                         msg.arg1 = progress;
                         mHandler.sendMessage(msg);
                     }
+
                     @Override
                     public void onDownloadFailed(Exception e) {
                         //下载异常进行相关提示操作

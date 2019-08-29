@@ -48,6 +48,9 @@
         <activity android:name=".finger.FingerLoginActivity" />
         <activity android:name=".webview.CommonWebView"
             android:screenOrientation="portrait"/>
+        <activity android:name=".webview.CommonDWebView"
+            android:screenOrientation="portrait"/>
+
 
         <provider
             android:name="android.support.v4.content.FileProvider"

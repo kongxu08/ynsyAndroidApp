@@ -7,15 +7,21 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
+import android.webkit.JsResult;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ynsy.ynsyandroidapp.R;
+import com.ynsy.ynsyandroidapp.util.L;
 import com.ynsy.ynsyandroidapp.util.LoadingUtil;
+import com.ynsy.ynsyandroidapp.util.SPUtils;
 import com.ynsy.ynsyandroidapp.util.StringHelper;
 
 import wendu.dsbridge.DWebView;
@@ -25,7 +31,7 @@ public class CommonDWebView extends AppCompatActivity {
     private String[] closeWebViews;
     private ImageView btn_back;
     private TextView tv_title;
-
+    private String token;
     private DWebView dwebView;
 
     View loadingView;
@@ -59,6 +65,8 @@ public class CommonDWebView extends AppCompatActivity {
 
         btn_back = findViewById(R.id.iv_back);
         tv_title = findViewById(R.id.tv_navtitle);
+        token = SPUtils.get(activity, "token", "").toString();
+        L.i(token);
 
         //绑定返回点击事件
         btn_back.setOnClickListener(new View.OnClickListener() {
@@ -80,6 +88,13 @@ public class CommonDWebView extends AppCompatActivity {
         DWebView.setWebContentsDebuggingEnabled(true);
         dwebView.addJavascriptObject(new JsApi(activity), null);
         dwebView.addJavascriptObject(new JsEchoApi(),"echo");
+
+        //允许JavaScript执行
+        dwebView.getSettings().setJavaScriptEnabled(true);
+        dwebView.getSettings().setDomStorageEnabled(true);
+        dwebView.getSettings().setAllowFileAccessFromFileURLs(true);
+        dwebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        dwebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);//设置缓存模式
 
         dwebView.setWebViewClient(new WebViewClient() {
             @Override
@@ -118,7 +133,13 @@ public class CommonDWebView extends AppCompatActivity {
         //网页加载进度条
         dwebView.setWebChromeClient(new WebChromeClient(){
             @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                return super.onJsAlert(view, url, message, result);
+            }
+
+            @Override
             public void onProgressChanged(WebView view, int newProgress) {
+
                 // TODO 自动生成的方法存根
 
                 if(newProgress==100){
@@ -130,6 +151,16 @@ public class CommonDWebView extends AppCompatActivity {
                 }
             }
         });
+
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.removeAllCookies(null);
+        cookieManager.setAcceptCookie(true);
+        cookieManager.setCookie("http://10.6.180.21:80/","toke="+token+";");
+        cookieManager.flush();
+
+        L.i("Cookies:"+cookieManager.getCookie("http://10.6.180.21:80/"));
+
+        dwebView.loadUrl(openUrl);
 
         if(StringHelper.isEmpty((openUrl))){
             dwebView.loadUrl("file:///android_asset/js-call-native.html");
