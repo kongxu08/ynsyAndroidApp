@@ -25,7 +25,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -241,7 +240,7 @@ public class CommonWebView extends AppCompatActivity {
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         cookieManager.setCookie(url, String.format("http://10.6.180.21", "token", token));
-
+        cookieManager.flush();
 
         webView.loadUrl(openUrl);
 
@@ -617,30 +616,6 @@ public class CommonWebView extends AppCompatActivity {
                     }
                     break;
                 case 22:
-                    /*AlertDialog dialog = new AlertDialog.Builder(activity)
-                            .setTitle("发现新版本")
-                            .setMessage(changeContent)
-                            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setPositiveButton("下载", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                    progressDialog = new ProgressDialog(activity);
-                                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                                    progressDialog.setMessage("下载中...");
-                                    progressDialog.setMax(100);
-                                    progressDialog.setCanceledOnTouchOutside(false);
-                                    progressDialog.setCancelable(true);
-                                    progressDialog.show();
-                                    new Thread(downLoadRun).start();
-                                }
-                            }).create();
-                    dialog.show();*/
                     new SweetAlertDialog(activity)
                             .setTitleText("发现新版本")
                             .setContentText(changeContent)
