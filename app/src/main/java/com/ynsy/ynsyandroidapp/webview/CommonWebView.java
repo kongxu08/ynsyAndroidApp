@@ -191,6 +191,7 @@ public class CommonWebView extends AppCompatActivity {
                 try {
                     jsonObject.put("userName",username);
                     String txlStr =SPUtils.get(activity,"TXL","").toString();
+                    txlStr = txlStr.replaceAll("\\\\","\\\\\\\\");
                     JSONObject txlJson = new JSONObject(txlStr);
                     jsonObject.put("contactBook",txlJson);
                     jsonObject.put("softVersion",DeviceUtil.getReleaseVersion(activity));
