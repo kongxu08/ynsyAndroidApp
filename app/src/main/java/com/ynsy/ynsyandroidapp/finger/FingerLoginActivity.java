@@ -17,7 +17,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.ynsy.ynsyandroidapp.LoginActivity;
 import com.ynsy.ynsyandroidapp.R;
+import com.ynsy.ynsyandroidapp.common.LoadingActivity;
 import com.ynsy.ynsyandroidapp.util.L;
 import com.ynsy.ynsyandroidapp.util.SPUtils;
 import com.ynsy.ynsyandroidapp.util.UrlManager;
@@ -152,11 +154,7 @@ public class FingerLoginActivity extends AppCompatActivity {
     //跳转
     private void redirectTo(){
         Intent intent = new Intent();
-        intent.setClass(FingerLoginActivity.this, CommonWebView.class);
-        Bundle bundle = new Bundle();
-        String username=SPUtils.get(activity,"username","").toString();
-        bundle.putString("url", UrlManager.appRemoteHomePageUrl);
-        intent.putExtras(bundle);
+        intent.setClass(FingerLoginActivity.this, LoadingActivity.class);
         startActivity(intent);
         finish();
     }

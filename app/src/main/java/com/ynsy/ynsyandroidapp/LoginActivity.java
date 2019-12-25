@@ -10,8 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.JsonReader;
-import android.util.Xml;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -22,6 +20,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
+import com.ynsy.ynsyandroidapp.common.LoadingActivity;
 import com.ynsy.ynsyandroidapp.util.L;
 import com.ynsy.ynsyandroidapp.util.LoadingUtil;
 import com.ynsy.ynsyandroidapp.util.PermissionsUtils;
@@ -29,16 +28,9 @@ import com.ynsy.ynsyandroidapp.util.SPUtils;
 import com.ynsy.ynsyandroidapp.util.StringHelper;
 import com.ynsy.ynsyandroidapp.util.T;
 import com.ynsy.ynsyandroidapp.util.UrlManager;
-import com.ynsy.ynsyandroidapp.webview.CommonWebView;
 import com.hsinfo.encrypt.Decrypt;
 
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParser;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.IOException;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -58,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
     private String pwd;
 
     private JSONObject userInfoJson;
+    private String zhbgToken;
 
     private View loadingView;
 
@@ -154,11 +147,8 @@ public class LoginActivity extends AppCompatActivity {
 
             try {
                 pwd = Decrypt.Encrypt(pwd, Decrypt.SECRETKEY);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             //取致远token
-            Request request = new Request.Builder()
+           /* Request request = new Request.Builder()
                     .url(UrlManager.seeyonToken)
                     .get()
                     .build();
@@ -182,22 +172,34 @@ public class LoginActivity extends AppCompatActivity {
                     //认证成功则
                     if (rps.isSuccessful()) {
                         JSONObject jsonMsg = new JSONObject(rps.body().string());
-                        if (jsonMsg.getBoolean("result")) {
+                        if (jsonMsg.getBoolean("result")) {*/
                            //取当前登陆用户对象
                             RequestBody requestBody = new FormBody.Builder()
                                     .add("userName", username)
+                                    .add("password", pwd)
                                     .build();
                             Request oaRequest = new Request.Builder().url(UrlManager.getUserInfoUrl).post(requestBody).build();
+//                            Request oaRequest = new Request.Builder().url("http://10.6.180.130:8080/yn/a/loginApi/getUserInfo").post(requestBody).build();
                             Response oaResponse = client.newCall(oaRequest).execute();
                             if(oaResponse.isSuccessful()){
                                 String userStr = oaResponse.body().string();
-                                L.d(userStr);
                                 JSONObject userJson = new JSONObject(userStr);
-                                userInfoJson=userJson.getJSONObject("body").getJSONObject("map").getJSONObject("userInfo");
-                                handler.sendEmptyMessage(1);
+                                if(userJson.getBoolean("success")){
+                                    userInfoJson=userJson.getJSONObject("body").getJSONObject("map").getJSONObject("userInfo");
+                                    zhbgToken=userJson.getJSONObject("body").getJSONObject("map").getString("token");
+                                    handler.sendEmptyMessage(1);
+                                }else{
+                                    //认证失败
+                                    String name = userJson.getString("msg");
+                                    Message message = handler.obtainMessage();
+                                    message.what = 3;
+                                    message.obj = name;
+                                    handler.sendMessage(message);
+                                }
+                            }else{
+                                handler.sendEmptyMessage(0);
                             }
-                            handler.sendEmptyMessage(1);
-                        } else {
+/*                        } else {
                             //认证失败
                             String name = jsonMsg.getString("message");
                             Message message = handler.obtainMessage();
@@ -210,15 +212,17 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 } else {
                     handler.sendEmptyMessage(0);
-                }
+                }*/
             } catch (Exception e) {
                 L.i(e.getMessage());
                 if (e.getMessage().contains("failed to connect to")) {
                     handler.sendEmptyMessage(2);
                 } else {
-                    handler.sendEmptyMessage(0);
+                    Message message = handler.obtainMessage();
+                    message.what = 3;
+                    message.obj = e.getMessage();
+                    handler.sendMessage(message);
                 }
-
             }
 
 
@@ -232,7 +236,7 @@ public class LoginActivity extends AppCompatActivity {
             switch (msg.what) {
                 case 0:
                     loadingView.setVisibility(View.GONE);
-                    T.showLong(activity, "登陆失败");
+                    T.showLongError(activity, "服务器无响应",true);
 
                     break;
                 case 1:
@@ -245,53 +249,25 @@ public class LoginActivity extends AppCompatActivity {
                     SPUtils.put(activity, "username", username);
                     SPUtils.put(activity, "password", pwd);
                     SPUtils.put(activity, "userInfo", userInfoJson);
+                    SPUtils.put(activity, "token", zhbgToken);
 
                     //跳转
                     Intent intent = new Intent();
-                    intent.setClass(LoginActivity.this, CommonWebView.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putString("url", UrlManager.appRemoteHomePageUrl);
-                    intent.putExtras(bundle);
+                    intent.setClass(LoginActivity.this, LoadingActivity.class);
                     startActivity(intent);
                     finish();
                     break;
                 case 2:
                     loadingView.setVisibility(View.GONE);
-                    T.showLong(activity, "连接服务器超时");
+                    T.showLongError(activity, "连接服务器超时",true);
                     break;
                 case 3:
                     loadingView.setVisibility(View.GONE);
-                    T.showLong(activity, msg.obj.toString());
+                    T.showLongError(activity, msg.obj.toString(),true);
                     break;
             }
         }
     };
-
-/*    private JSONObject getUserInfo(OkHttpClient client, String username) {
-        JSONObject jsonObject = null;
-        try {
-            //MediaType  设置Content-Type 标头中包含的媒体类型值
-            FormBody formBody = new FormBody.Builder().add("userName", username).build();
-            Request request = new Request.Builder()
-                    .url(UrlManager.getUserInfoUrl)//请求的url
-                    .post(formBody)
-                    .build();
-
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                jsonObject = new JSONObject(response.body().string());
-                jsonObject = jsonObject.getJSONObject("body").getJSONObject("map").getJSONObject("userInfo");
-            } else {
-                L.i(response.body().string());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return jsonObject;
-    }*/
-
 
     /**
      * 在屏幕上添加一个转动的小菊花（传说中的Loading），默认为隐藏状态

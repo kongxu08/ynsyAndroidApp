@@ -187,6 +187,7 @@ public class CommonWebView extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 String username = SPUtils.get(activity,"username","").toString();
+                String token = SPUtils.get(activity,"token","").toString();
                 JSONObject jsonObject = new JSONObject();
                 try {
                     jsonObject.put("userName",username);
@@ -194,6 +195,7 @@ public class CommonWebView extends AppCompatActivity {
                     JSONObject txlJson = new JSONObject(txlStr);
                     jsonObject.put("contactBook",txlJson);
                     jsonObject.put("softVersion",DeviceUtil.getReleaseVersion(activity));
+                    jsonObject.put("token",token);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
