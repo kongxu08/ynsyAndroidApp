@@ -54,10 +54,11 @@ public class DownloadUtil {
      * @param destFileName 下载文件名称
      * @param listener     下载监听
      */
-    public void download(final String url, final String destFileDir, final String destFileName, final OnDownloadListener listener) {
+    public void download(final String url,final String token, final String destFileDir, final String destFileName, final OnDownloadListener listener) {
 
         Request request = new Request.Builder()
                 .url(url)
+                .addHeader("token",token)
                 .build();
 
         OkHttpClient client = new OkHttpClient();

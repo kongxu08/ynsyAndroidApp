@@ -74,11 +74,10 @@ public class LoadingActivity extends AppCompatActivity {
                     String userStr = oaResponse.body().string();
                     JSONObject userJson = new JSONObject(userStr);
                     if(userJson.getBoolean("success")){
-                        userInfoJson=userJson.getJSONObject("body").getJSONObject("map").getJSONObject("userInfo");
-                        zhbgToken=userJson.getJSONObject("body").getJSONObject("map").getString("token");
+                        userInfoJson=userJson.getJSONObject("body").getJSONObject("userInfo");
+                        zhbgToken=userJson.getJSONObject("body").getString("token");
                         SPUtils.put(activity, "userInfo", userInfoJson);
                         SPUtils.put(activity, "token", zhbgToken);
-
                     }else{
                         //认证失败
                         String name = userInfoJson.getString("msg");
@@ -86,9 +85,11 @@ public class LoadingActivity extends AppCompatActivity {
                         message.what = 3;
                         message.obj = name;
                         handler.sendMessage(message);
+                        return;
                     }
                 }else{
                     handler.sendEmptyMessage(0);
+                    return;
                 }
 
                 FormBody formBody = new FormBody.Builder().build();
@@ -113,6 +114,8 @@ public class LoadingActivity extends AppCompatActivity {
                     SPUtils.put(activity,"tipsUpdateTXL",today.getTime());
 
                     handler.sendEmptyMessage(200);
+                }else{
+                    handler.sendEmptyMessage(0);
                 }
             }catch (Exception e){
                 L.i(e.getMessage());
@@ -125,8 +128,6 @@ public class LoadingActivity extends AppCompatActivity {
                     handler.sendMessage(message);
                 }
             }
-
-            handler.sendEmptyMessage(200);
 
         }
     };
@@ -149,11 +150,12 @@ public class LoadingActivity extends AppCompatActivity {
                     String userStr = oaResponse.body().string();
                     JSONObject userJson = new JSONObject(userStr);
                     if(userJson.getBoolean("success")){
-                        userInfoJson=userJson.getJSONObject("body").getJSONObject("map").getJSONObject("userInfo");
-                        zhbgToken=userJson.getJSONObject("body").getJSONObject("map").getString("token");
+                        userInfoJson=userJson.getJSONObject("body").getJSONObject("userInfo");
+                        zhbgToken=userJson.getJSONObject("body").getString("token");
                         SPUtils.put(activity, "userInfo", userInfoJson);
                         SPUtils.put(activity, "token", zhbgToken);
-
+                        handler.sendEmptyMessage(200);
+                        return;
                     }else{
                         //认证失败
                         String name = userInfoJson.getString("msg");
@@ -161,15 +163,15 @@ public class LoadingActivity extends AppCompatActivity {
                         message.what = 3;
                         message.obj = name;
                         handler.sendMessage(message);
+                        return;
                     }
                 }else{
-                    handler.sendEmptyMessage(0);
+                    handler.sendEmptyMessage(4);
                 }
-
             }catch (Exception e){
                 L.i(e.getMessage());
                 if (e.getMessage().contains("failed to connect to")) {
-                    handler.sendEmptyMessage(2);
+                    handler.sendEmptyMessage(4);
                 } else {
                     Message message = handler.obtainMessage();
                     message.what = 3;
@@ -177,8 +179,6 @@ public class LoadingActivity extends AppCompatActivity {
                     handler.sendMessage(message);
                 }
             }
-
-            handler.sendEmptyMessage(200);
 
         }
     };
@@ -223,6 +223,10 @@ public class LoadingActivity extends AppCompatActivity {
                     break;
                 case 3:
                     T.showLongError(activity, msg.obj.toString(),true);
+                    redirectToLogin();
+                    break;
+                case 4:
+                    T.showLongError(activity, "获取通讯录失败",true);
                     redirectToLogin();
                     break;
                 case 200:

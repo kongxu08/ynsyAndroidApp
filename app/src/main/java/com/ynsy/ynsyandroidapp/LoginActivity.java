@@ -67,6 +67,11 @@ public class LoginActivity extends AppCompatActivity {
         edit_user = findViewById(R.id.et_usertel);
         edit_password = findViewById(R.id.et_password);
 
+        String un = SPUtils.get(activity,"username","").toString();
+        if(!StringHelper.isEmpty(un)){
+            edit_user.setText(un);
+        }
+
         edit_password.setOnKeyListener(onKey);
 
         loginBtn = findViewById(R.id.btn_login);
@@ -95,7 +100,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public void forbitPermissons() {
 //            finish();
-            T.showLong(activity, "权限申请不通过");
+            T.showLongError(activity, "权限申请不通过",true);
         }
     };
 
@@ -129,11 +134,11 @@ public class LoginActivity extends AppCompatActivity {
         username = edit_user.getText().toString().trim();
         pwd = edit_password.getText().toString().trim();
         if(StringHelper.isEmpty(username)){
-            T.showShort(activity,"请输入用户名");
+            T.showShortInfo(activity,"请输入用户名",true);
             return;
         }
         if(StringHelper.isEmpty(pwd)){
-            T.showShort(activity,"请输入密码");
+            T.showShortInfo(activity,"请输入密码",true);
             return;
         }
         loadingView.setVisibility(View.VISIBLE);
@@ -185,9 +190,10 @@ public class LoginActivity extends AppCompatActivity {
                                 String userStr = oaResponse.body().string();
                                 JSONObject userJson = new JSONObject(userStr);
                                 if(userJson.getBoolean("success")){
-                                    userInfoJson=userJson.getJSONObject("body").getJSONObject("map").getJSONObject("userInfo");
-                                    zhbgToken=userJson.getJSONObject("body").getJSONObject("map").getString("token");
+                                    userInfoJson=userJson.getJSONObject("body").getJSONObject("userInfo");
+                                    zhbgToken=userJson.getJSONObject("body").getString("token");
                                     handler.sendEmptyMessage(1);
+                                    return;
                                 }else{
                                     //认证失败
                                     String name = userJson.getString("msg");
@@ -195,6 +201,7 @@ public class LoginActivity extends AppCompatActivity {
                                     message.what = 3;
                                     message.obj = name;
                                     handler.sendMessage(message);
+                                    return;
                                 }
                             }else{
                                 handler.sendEmptyMessage(0);
@@ -243,7 +250,7 @@ public class LoginActivity extends AppCompatActivity {
                     loadingView.setVisibility(View.GONE);
 
                     if (userInfoJson == null) {
-                        T.showLong(activity, "获取用户数据失败");
+                        T.showLongError(activity, "获取用户数据失败",true);
                         break;
                     }
                     SPUtils.put(activity, "username", username);

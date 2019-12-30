@@ -49,6 +49,11 @@
         <activity android:name=".finger.FingerLoginActivity" />
         <activity
             android:name=".webview.CommonWebView"
+            android:windowSoftInputMode="stateVisible|adjustResize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".webview.CommonDWebView"
+            android:windowSoftInputMode="stateVisible|adjustResize"
             android:screenOrientation="portrait" />
 
         <provider

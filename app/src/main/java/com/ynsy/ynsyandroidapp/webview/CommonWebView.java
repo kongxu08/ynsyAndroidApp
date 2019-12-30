@@ -81,6 +81,7 @@ public class CommonWebView extends AppCompatActivity {
     private String url;
 
     private String username;
+    private String zhbgToken;
 
     private String[] closeWebViews;
 
@@ -103,6 +104,7 @@ public class CommonWebView extends AppCompatActivity {
         loadingWebView = LoadingUtil.creatWebLoadingView(activity);
 
         username = SPUtils.get(activity,"username","").toString();
+        zhbgToken = SPUtils.get(activity,"token","").toString();
 
         Intent intent = getIntent();
         String openUrl = intent.getStringExtra("url");
@@ -488,7 +490,7 @@ public class CommonWebView extends AppCompatActivity {
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.setCancelable(true);
         progressDialog.show();
-        downFile(url);
+        downFile(url,zhbgToken);
     }
 
     //应用更新
@@ -533,8 +535,8 @@ public class CommonWebView extends AppCompatActivity {
     /**
      * 文件下载
      */
-    private void downFile(String url) {
-        DownloadUtil.get().download(url, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath(), url.substring(url.lastIndexOf("/")),
+    private void downFile(String url,String token) {
+        DownloadUtil.get().download(url,token, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath(), url.substring(url.lastIndexOf("/")),
                 new DownloadUtil.OnDownloadListener() {
                     @Override
                     public void onDownloadSuccess(File file) {
@@ -773,6 +775,7 @@ public class CommonWebView extends AppCompatActivity {
                         .add("appVersion",DeviceUtil.getReleaseVersion(activity)).build();
                 Request request = new Request.Builder()
                         .url(UrlManager.userDeviceSaveOrUpdateUrl)
+                        .addHeader("token",zhbgToken)
                         .post(formBody)
                         .build();
                 Response response = client.newCall(request).execute();
@@ -796,6 +799,7 @@ public class CommonWebView extends AppCompatActivity {
                         .add("userName",username).build();
                 Request request = new Request.Builder()
                         .url(UrlManager.userDeviceDeleteUrl)
+                        .addHeader("token",zhbgToken)
                         .post(formBody)
                         .build();
                 Response response = client.newCall(request).execute();
@@ -847,8 +851,8 @@ public class CommonWebView extends AppCompatActivity {
     /**
      * 升级
      */
-    private void updateApk(String url) {
-        DownloadUtil.get().download(url, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath(), url.substring(url.lastIndexOf("/")),
+    private void updateApk(String url,String token) {
+        DownloadUtil.get().download(url,token,Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath(), url.substring(url.lastIndexOf("/")),
                 new DownloadUtil.OnDownloadListener() {
                     @Override
                     public void onDownloadSuccess(File file) {
@@ -879,7 +883,7 @@ public class CommonWebView extends AppCompatActivity {
     Runnable downLoadRun = new Runnable() {
         @Override
         public void run() {
-            updateApk(UrlManager.appDownLoadUrl);
+            updateApk(UrlManager.appDownLoadUrl,zhbgToken);
         }
     };
 
