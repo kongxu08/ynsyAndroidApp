@@ -112,11 +112,8 @@ public class LoadingActivity extends AppCompatActivity {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                     today = sdf.parse(sdf.format(today));
                     SPUtils.put(activity,"tipsUpdateTXL",today.getTime());
-
-                    handler.sendEmptyMessage(200);
-                }else{
-                    handler.sendEmptyMessage(0);
                 }
+                handler.sendEmptyMessage(200);
             }catch (Exception e){
                 L.i(e.getMessage());
                 if (e.getMessage().contains("failed to connect to")) {
