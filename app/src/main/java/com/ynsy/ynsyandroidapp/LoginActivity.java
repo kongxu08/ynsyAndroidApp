@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.ynsy.ynsyandroidapp.common.LoadingActivity;
 import com.ynsy.ynsyandroidapp.util.L;
@@ -53,6 +54,7 @@ public class LoginActivity extends AppCompatActivity {
     private String zhbgToken;
 
     private View loadingView;
+    private TextView forget_tv;
 
 
     @Override
@@ -66,6 +68,14 @@ public class LoginActivity extends AppCompatActivity {
 
         edit_user = findViewById(R.id.et_usertel);
         edit_password = findViewById(R.id.et_password);
+        forget_tv=findViewById(R.id.forget);
+        forget_tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(activity,ForgetActivity.class);
+                startActivity(intent);
+            }
+        });
 
         String un = SPUtils.get(activity,"username","").toString();
         if(!StringHelper.isEmpty(un)){
@@ -149,7 +159,6 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public void run() {
             OkHttpClient client = new OkHttpClient();
-
             try {
                 pwd = Decrypt.Encrypt(pwd, Decrypt.SECRETKEY);
             //取致远token
@@ -222,7 +231,7 @@ public class LoginActivity extends AppCompatActivity {
                 }*/
             } catch (Exception e) {
                 L.i(e.getMessage());
-                if (e.getMessage().contains("failed to connect to")) {
+                if (e.getMessage().contains("Failed to connect to")) {
                     handler.sendEmptyMessage(2);
                 } else {
                     Message message = handler.obtainMessage();

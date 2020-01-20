@@ -166,12 +166,12 @@ public class LoadingActivity extends AppCompatActivity {
                         return;
                     }
                 }else{
-                    handler.sendEmptyMessage(4);
+                    handler.sendEmptyMessage(2);
                 }
             }catch (Exception e){
                 L.i(e.getMessage());
                 if (e.getMessage().contains("failed to connect to")) {
-                    handler.sendEmptyMessage(4);
+                    handler.sendEmptyMessage(2);
                 } else {
                     Message message = handler.obtainMessage();
                     message.what = 3;

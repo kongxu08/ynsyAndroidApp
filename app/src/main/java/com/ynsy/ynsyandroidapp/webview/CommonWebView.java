@@ -135,7 +135,9 @@ public class CommonWebView extends AppCompatActivity {
                 super.onReceivedError(view, errorCode, description, failingUrl);
                 // 断网或者网络连接超时
                 if (errorCode == ERROR_HOST_LOOKUP || errorCode == ERROR_CONNECT || errorCode == ERROR_TIMEOUT) {
-                    //view.loadUrl("file://" + getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) + "/cjwsjy/errorPage/no_network.html");
+                    Intent intent = new Intent(activity,LoginActivity.class);
+                    activity.startActivity(intent);
+                    finish();
                 }
             }
 
@@ -161,7 +163,6 @@ public class CommonWebView extends AppCompatActivity {
             // 在点击请求的是链接是才会调用，重写此方法返回true表明点击网页里面的链接还是在当前的webview里跳转，不跳到浏览器那边。这个函数我们可以做很多操作，比如我们读取到某些特殊的URL，于是就可以不打开地址，取消这个操作，进行预先定义的其他操作，这对一个程序是非常必要的。
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 int result = 0;
-                String suffix = "";
                 // 判断url链接中是否含有某个字段，如果有就执行指定的跳转（不执行跳转url链接），如果没有就加载url链接
                 if (url.startsWith("tel:") || url.startsWith("sms:") || url.startsWith("mailto:")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -175,8 +176,6 @@ public class CommonWebView extends AppCompatActivity {
 
                 if (result == 1) {
                     T.showShortInfo(activity, "开始下载附件...",true);
-                    result = url.lastIndexOf(".");
-                    suffix = url.substring(result + 1, url.length());
 
                     view.stopLoading();
                     return true;
