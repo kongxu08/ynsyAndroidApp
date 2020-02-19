@@ -80,5 +80,8 @@ public class AppStart extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
+/*        Intent intent = new Intent(this, Foot.class);
+        startActivity(intent);
+        finish();*/
     }
 }
