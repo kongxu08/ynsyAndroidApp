@@ -32,6 +32,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.hsinfo.encrypt.Decrypt;
 import com.ynsy.ynsyandroidapp.LoginActivity;
 import com.ynsy.ynsyandroidapp.R;
 import com.ynsy.ynsyandroidapp.util.AndroidShare;
@@ -512,6 +513,38 @@ public class CommonWebView extends AppCompatActivity {
     public void setBadge(String num) {//对应js中xxx.openWebView("")
         int dbCount = Integer.parseInt(num);
         BadgeNum.setBadgeNum(activity, dbCount);
+    }
+
+    //加密
+    @JavascriptInterface
+    public void encryption(String str) {//对应js中xxx.openWebView("")
+        try {
+            final String result = Decrypt.Encrypt(str.trim(), Decrypt.SECRETKEY);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    webView.loadUrl("javascript:encryption('"+result+"')");
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //解密
+    @JavascriptInterface
+    public void decrypt(String str) {//对应js中xxx.openWebView("")
+        try {
+            final String result = Decrypt.Decrypts(str.trim(), Decrypt.SECRETKEY);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    webView.loadUrl("javascript:decrypt('"+result+"')");
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @JavascriptInterface

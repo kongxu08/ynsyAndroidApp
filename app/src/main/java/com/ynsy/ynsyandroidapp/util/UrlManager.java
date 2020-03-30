@@ -7,7 +7,6 @@ public class UrlManager {
     //oa服务器对应72.16.7.210:8085
     public static String Host = "http://116.54.19.198:8111";
 //    private static String Host = "http://116.54.19.198:8085";
-//    private static String Host = "http://10.6.180.130:9000";
 
     //正式app服务器对应172.16.7.210:8081
 //    private static String appHost = "http://116.54.19.198:8081";
