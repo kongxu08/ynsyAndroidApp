@@ -219,7 +219,7 @@ public class LoadingActivity extends AppCompatActivity {
                     redirectToLogin();
                     break;
                 case 3:
-                    T.showLongError(activity, msg.obj.toString(),true);
+                    T.showLongError(activity, "认证失败",true);
                     redirectToLogin();
                     break;
                 case 4:
