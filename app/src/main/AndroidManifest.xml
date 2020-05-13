@@ -53,11 +53,11 @@
         <activity
             android:name=".webview.CommonWebView"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateVisible|adjustResize" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".webview.CommonDWebView"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateVisible|adjustResize" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
