@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.ynsy.ynsyandroidapp.view.RoundRelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:alpha="0.8"
+        android:background="#616161">
+
+        <ImageView
+            android:id="@+id/iv_pro"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:src="@drawable/popup" />
+
+        <TextView
+            android:id="@+id/recording_time"
+            android:layout_width="wrap_content"
+            android:layout_height="18dp"
+            android:layout_below="@+id/iv_pro"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="5dp"
+            android:textColor="#fff"
+            android:text="00:00"
+            android:padding="1dp"
+            android:textSize="12dp" />
+
+        <TextView
+            android:id="@+id/recording_tip"
+            android:layout_width="wrap_content"
+            android:layout_height="18dp"
+            android:layout_below="@id/recording_time"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="5dp"
+            android:textColor="#fff"
+            android:text="正在录音,松开保存"
+            android:padding="1dp"
+            android:textSize="12dp" />
+    </com.ynsy.ynsyandroidapp.view.RoundRelativeLayout>
+</RelativeLayout>

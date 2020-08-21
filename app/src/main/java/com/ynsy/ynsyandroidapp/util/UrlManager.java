@@ -9,9 +9,9 @@ public class UrlManager {
 //    private static String Host = "http://116.54.19.198:8085";
 
     //正式app服务器对应172.16.7.210:8081
-    private static String appHost = "http://116.54.19.198:8081";
+//    private static String appHost = "http://116.54.19.198:8081";
     //李衍测试
-//    private static String appHost = "http://116.54.19.198:8088";
+    private static String appHost = "http://116.54.19.198:8088";
 
     public static String appVersionUrl = Host+"/oa/getAppVersion?appSystem=android";
     public static String appDownLoadUrl = appHost+"/download/ynslsd.apk";

@@ -93,8 +93,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        //两个日历权限和一个数据读写权限
-        String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
+        //录音、数据读写权限
+        String[] permissions = new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
 //        PermissionsUtils.showSystemSetting = false;//是否支持显示系统设置权限设置窗口跳转
         //这里的this不是上下文，是Activity对象！
         PermissionsUtils.getInstance().chekPermissions(this, permissions, permissionsResult);

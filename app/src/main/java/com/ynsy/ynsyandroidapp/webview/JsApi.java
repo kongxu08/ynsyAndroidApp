@@ -1,18 +1,25 @@
 package com.ynsy.ynsyandroidapp.webview;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.CountDownTimer;
+import android.os.Environment;
+import android.view.Gravity;
 import android.webkit.JavascriptInterface;
 
 import com.ynsy.ynsyandroidapp.R;
 import com.ynsy.ynsyandroidapp.util.AndroidShare;
 import com.ynsy.ynsyandroidapp.util.Base64Util;
 import com.ynsy.ynsyandroidapp.util.StringHelper;
+import com.ynsy.ynsyandroidapp.util.T;
+import com.ynsy.ynsyandroidapp.util.UrlManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.File;
 
 import wendu.dsbridge.CompletionHandler;
 
@@ -22,9 +29,11 @@ import wendu.dsbridge.CompletionHandler;
 
 public class JsApi {
     Context context;
+    CommonDWebView activity;
     private JsApi(){}
-    public JsApi(Context ctx){
-        context = ctx;
+    public JsApi(CommonDWebView activity){
+        this.activity = activity;
+        context = activity.getApplicationContext();
     }
     @JavascriptInterface
     public void callShare(String msg) {
@@ -89,4 +98,55 @@ public class JsApi {
             }
         }.start();
     }
+
+    //应用更新
+    @JavascriptInterface
+    public void updateApp(Object obj) {
+        activity.checkVer();
+    }
+
+    //下载附件
+    @JavascriptInterface
+    public void openFile(Object obj) {
+        UrlManager.appDownLoadUrl=obj.toString();
+        new Thread(activity.downLoadRun).start();
+    }
+
+    @JavascriptInterface
+    public void openDWebView(Object obj) {
+        try {
+            JSONObject paramJson = new JSONObject(obj.toString());
+            String openUrl = paramJson.getString("openUrl");
+
+            Intent intent = new Intent(context, CommonDWebView.class);
+            intent.putExtra("url", openUrl);//设置参数
+
+            if(paramJson.has("closeUrl")){
+                String closeWebView = paramJson.getString("closeUrl");
+                String[] closeWebViews = closeWebView.split(" ");
+                intent.putExtra("closeWebViews",closeWebViews);
+            }
+
+            if(paramJson.has("orientation")){
+                String orientation = paramJson.getString("orientation");
+                intent.putExtra("orientation",orientation);
+            }
+
+            if(paramJson.has("nav")){
+                String nav = paramJson.getString("nav");
+                intent.putExtra("nav",nav);
+            }
+
+            context.startActivity(intent);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //开始录音
+    //结束录音
+    //获取已存在的录音地址，不存在则返回空
+    //删除录音
+    //播放录音
+    //停止播放
 }

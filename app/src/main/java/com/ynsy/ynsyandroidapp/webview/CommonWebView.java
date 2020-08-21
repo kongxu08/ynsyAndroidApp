@@ -3,12 +3,18 @@ package com.ynsy.ynsyandroidapp.webview;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -24,13 +30,18 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.hsinfo.encrypt.Decrypt;
 import com.ynsy.ynsyandroidapp.LoginActivity;
@@ -41,6 +52,7 @@ import com.ynsy.ynsyandroidapp.util.Base64Util;
 import com.ynsy.ynsyandroidapp.util.DeviceUtil;
 import com.ynsy.ynsyandroidapp.util.DownloadUtil;
 import com.ynsy.ynsyandroidapp.util.FileTypeHelper;
+import com.ynsy.ynsyandroidapp.util.HttpUtil;
 import com.ynsy.ynsyandroidapp.util.L;
 import com.ynsy.ynsyandroidapp.util.LoadingUtil;
 import com.ynsy.ynsyandroidapp.util.PermissionsUtils;
@@ -72,7 +84,9 @@ import okhttp3.Response;
 public class CommonWebView extends AppCompatActivity {
 
     private Activity activity;
-
+    private String[] closeWebViews;
+    private ImageView btn_back;
+    private TextView tv_title;
     private static boolean back=false;
 
     ProgressDialog progressDialog;
@@ -83,8 +97,6 @@ public class CommonWebView extends AppCompatActivity {
 
     private String username;
     private String zhbgToken;
-
-    private String[] closeWebViews;
 
     private String versionNumber;
     private String changeContent;
@@ -98,17 +110,64 @@ public class CommonWebView extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent intent = getIntent();
+        String openUrl = intent.getStringExtra("url");
+        url = openUrl;
+        //获取指定关闭webView的url
+        closeWebViews = intent.getStringArrayExtra("closeWebViews");
 
-        setContentView(R.layout.activity_common_webview);
+        //通过参数设置屏幕是否跟随系统旋转
+        String orientation = intent.getStringExtra("orientation");
+        if(orientation!=null){
+            // 设置为跟随系统sensor的状态
+            if(orientation.equals("sensor")){
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+            }else if(orientation.equals("landscape")){
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
+        }
+
+        String nav = intent.getStringExtra("nav");
+        String title = intent.getStringExtra("title");
+        if(nav!=null){
+            if(nav.equals("0")){
+                setContentView(R.layout.activity_common_no_nav_webview);
+            }else{
+                setContentView(R.layout.activity_common_webview);
+                tv_title = findViewById(R.id.tv_navtitle);
+                if(title!=null){
+                    tv_title.setText(title);
+                }
+                btn_back = findViewById(R.id.iv_back);
+                //绑定返回点击事件
+                btn_back.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onBackPressed();
+                    }
+                });
+            }
+        }else{
+            setContentView(R.layout.activity_common_webview);
+            tv_title = findViewById(R.id.tv_navtitle);
+            if(title!=null){
+                tv_title.setText(title);
+            }
+            btn_back = findViewById(R.id.iv_back);
+            //绑定返回点击事件
+            btn_back.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            });
+        }
 
         activity = this;
         loadingWebView = LoadingUtil.creatWebLoadingView(activity);
 
         username = SPUtils.get(activity,"username","").toString();
         zhbgToken = SPUtils.get(activity,"token","").toString();
-
-        Intent intent = getIntent();
-        String openUrl = intent.getStringExtra("url");
         url = openUrl;
 
         //获取指定关闭webView的url
@@ -144,7 +203,7 @@ public class CommonWebView extends AppCompatActivity {
 
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-                Log.i("LOGTAG", "shouldInterceptRequest url=" + url + ";threadInfo" + Thread.currentThread());
+                L.i(url);
                 WebResourceResponse response = null;
                 if (url.contains("判断条件")) {
                     try {
@@ -156,6 +215,45 @@ public class CommonWebView extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
+                //邮箱中遇见下载的情况
+                if(url.startsWith("http://mail.ynwdi.com/coremail")&&url.contains("&mode=download")){
+                    CookieManager cookieManager = CookieManager.getInstance();
+                    final String cookieStr = cookieManager.getCookie(url);
+                    L.i("Fetch Cookie: " + cookieStr);
+                    Message msg = mHandler.obtainMessage(30,"正在下载...");
+                    mHandler.sendMessage(msg);
+//                    downloadBySystem(url,null,null,cookieStr);
+                    HttpUtil.get().download(
+                            url,
+                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath(),
+                            url.substring(url.lastIndexOf("/")),
+                            new DownloadUtil.OnDownloadListener() {
+                                @Override
+                                public void onDownloadSuccess(File file) {
+                                    //下载完成进行相关逻辑操作
+                                    Message msg = mHandler.obtainMessage();
+                                    msg.what = 0;
+                                    msg.obj=file;
+                                    mHandler.sendMessage(msg);
+                                }
+                                @Override
+                                public void onDownloading(int progress) {
+                                    Message msg = mHandler.obtainMessage();
+                                    msg.what = 11;
+                                    msg.arg1 = progress;
+                                    mHandler.sendMessage(msg);
+                                }
+                                @Override
+                                public void onDownloadFailed(Exception e) {
+                                    //下载异常进行相关提示操作
+                                    Message msg = mHandler.obtainMessage();
+                                    msg.what = 1;
+                                    msg.obj = e;
+                                    mHandler.sendMessage(msg);
+                                }
+                            });
+
+                }
 
                 return response;
             }
@@ -163,6 +261,7 @@ public class CommonWebView extends AppCompatActivity {
             @Override
             // 在点击请求的是链接是才会调用，重写此方法返回true表明点击网页里面的链接还是在当前的webview里跳转，不跳到浏览器那边。这个函数我们可以做很多操作，比如我们读取到某些特殊的URL，于是就可以不打开地址，取消这个操作，进行预先定义的其他操作，这对一个程序是非常必要的。
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                L.i(url);
                 int result = 0;
                 // 判断url链接中是否含有某个字段，如果有就执行指定的跳转（不执行跳转url链接），如果没有就加载url链接
                 if (url.startsWith("tel:") || url.startsWith("sms:") || url.startsWith("mailto:")) {
@@ -190,6 +289,9 @@ public class CommonWebView extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 String username = SPUtils.get(activity,"username","").toString();
                 String token = SPUtils.get(activity,"token","").toString();
+                if(tv_title!=null&&StringHelper.isEmpty(String.valueOf(tv_title.getText()))){
+                    tv_title.setText(webView.getTitle());
+                }
                 JSONObject jsonObject = new JSONObject();
                 try {
                     jsonObject.put("userName",username);
@@ -419,6 +521,17 @@ public class CommonWebView extends AppCompatActivity {
         }
 
         String webU = webView.getUrl();
+        L.i(webU);
+
+        //论客返回时直接关闭webview  http://mail.ynwdi.com/coremail/xphone/main.jsp#module=
+        L.i(String.valueOf(webView.copyBackForwardList().getSize()));
+        if((webView.copyBackForwardList().getSize()==2||webView.copyBackForwardList().getSize()==3)
+                &&webU.equals("http://mail.ynwdi.com/coremail/xphone/main.jsp#module=folder")
+                ||webU.equals("http://mail.ynwdi.com/coremail/xphone/main.jsp#module=foldmain")){
+            finish();
+        }
+
+
         if(closeWebViews.length>5){
             super.onBackPressed();
         }else{
@@ -428,7 +541,12 @@ public class CommonWebView extends AppCompatActivity {
                     return;
                 }
             }
-            webView.goBack();
+            if(webView.canGoBack()){
+                webView.goBack();
+            }else{
+                finish();
+            }
+
         }
     }
 
@@ -455,11 +573,57 @@ public class CommonWebView extends AppCompatActivity {
 
     //新开窗口webview
     @JavascriptInterface
-    public void openWebView(String openUrl) {//对应js中xxx.openWebView("")
-        L.i(openUrl);
-        Intent intent = new Intent(CommonWebView.this, CommonWebView.class);
-        intent.putExtra("url", openUrl);//设置参数,""
-        startActivity(intent);
+    public void openWebView(String obj) {
+/*        Intent intent = new Intent(activity, CommonWebView.class);
+        intent.putExtra("url", url);//设置参数
+        activity.startActivity(intent);*/
+        try {
+            JSONObject paramJson = new JSONObject(obj.toString());
+            String openUrl = paramJson.getString("openUrl");
+
+            Intent intent = new Intent(activity, CommonWebView.class);
+            intent.putExtra("url", openUrl);//设置参数
+
+            if(openUrl.startsWith("http://mail.ynwdi.com/coremail")){
+                HttpUtil.get().syncGet(openUrl);
+            }
+
+            if (paramJson.has("closeUrl")) {
+                String closeWebView = paramJson.getString("closeUrl");
+                String[] closeWebViews = closeWebView.split(" ");
+                intent.putExtra("closeWebViews", closeWebViews);
+            }
+
+            if (paramJson.has("orientation")) {
+                String orientation = paramJson.getString("orientation");
+                intent.putExtra("orientation", orientation);
+            }
+
+            if (paramJson.has("nav")) {
+                String nav = paramJson.getString("nav");
+                intent.putExtra("nav", nav);
+            }
+
+            if (paramJson.has("title")) {
+                String title = paramJson.getString("title");
+                intent.putExtra("title", title);
+            }
+            activity.startActivity(intent);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    //唤起手机浏览器
+    @JavascriptInterface
+    public void openActionView(String url) {
+        L.i(url);
+        //从其他浏览器打开
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        Uri content_url = Uri.parse(url);
+        intent.setData(content_url);
+        startActivity(Intent.createChooser(intent, "请选择浏览器"));
     }
 
     //注销
@@ -714,6 +878,10 @@ public class CommonWebView extends AppCompatActivity {
                 case 24:
                     T.showShortSuccess(activity,"已是最新版本",true);
                     break;
+                case 30:
+
+                    T.showShortInfo(activity,msg.obj.toString(),true);
+                    break;
             }
         }
     };
@@ -918,5 +1086,71 @@ public class CommonWebView extends AppCompatActivity {
             updateApk(UrlManager.appDownLoadUrl,zhbgToken);
         }
     };
+
+
+/*    private BroadcastReceiver broadcastReceiver;
+
+    void downloadBySystem(String url, String contentDisposition, String mimeType,String cookie) {
+        // 指定下载地址
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        if(cookie!=null){
+            request.addRequestHeader("Cookie",cookie);
+        }
+        // 允许媒体扫描，根据下载的文件类型被加入相册、音乐等媒体库
+        request.allowScanningByMediaScanner();
+        // 设置通知的显示类型，下载进行时和完成后显示通知
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        // 设置通知栏的标题，如果不设置，默认使用文件名
+//        request.setTitle("This is title");
+        // 设置通知栏的描述
+//        request.setDescription("This is description");
+        // 允许在计费流量下下载
+        request.setAllowedOverMetered(false);
+        // 允许该记录在下载管理界面可见
+        request.setVisibleInDownloadsUi(false);
+        // 允许漫游时下载
+        request.setAllowedOverRoaming(true);
+        // 允许下载的网路类型
+        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+        // 设置下载文件保存的路径和文件名
+        String fileName  = URLUtil.guessFileName(url, contentDisposition, mimeType);
+        L.d( fileName);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+//        另外可选一下方法，自定义下载路径
+//        request.setDestinationUri()
+//        request.setDestinationInExternalFilesDir()
+        final DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        // 添加一个下载任务
+        long downloadId = downloadManager.enqueue(request);
+        L.d(String.valueOf( downloadId));
+
+        listener(downloadId);
+
+    }
+
+    private void listener(final long Id) {
+
+        // 注册广播监听系统的下载完成事件。
+        IntentFilter intentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                long ID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                DownloadManager manager = (DownloadManager)context.getSystemService(Context.DOWNLOAD_SERVICE);
+                if (ID == Id) {
+                    T.showShortSuccess(activity," 下载完成!", true);
+                }
+            }
+
+        };
+
+        registerReceiver(broadcastReceiver, intentFilter);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(broadcastReceiver);
+    }*/
 
 }

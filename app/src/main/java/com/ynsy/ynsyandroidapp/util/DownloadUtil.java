@@ -63,12 +63,6 @@ public class DownloadUtil {
 
         OkHttpClient client = new OkHttpClient();
 
-        try {
-            Response response = client.newCall(request).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         //异步请求
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override

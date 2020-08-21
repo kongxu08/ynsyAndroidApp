@@ -144,5 +144,10 @@ public class SDCardUtils
 
     }
 
+    public static boolean isExit(String path){
+        File file = new File(path);
+        return file.exists();
+    }
+
 
 }

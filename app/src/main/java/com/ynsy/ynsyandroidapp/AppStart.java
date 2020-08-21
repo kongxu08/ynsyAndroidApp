@@ -12,6 +12,7 @@ import android.view.animation.Animation;
 
 import com.huawei.android.hms.agent.HMSAgent;
 import com.huawei.android.hms.agent.common.handler.ConnectHandler;
+import com.ynsy.ynsyandroidapp.activity.AutioActivity;
 import com.ynsy.ynsyandroidapp.finger.FingerLoginActivity;
 import com.ynsy.ynsyandroidapp.util.L;
 import com.ynsy.ynsyandroidapp.util.SPUtils;
@@ -70,6 +71,11 @@ public class AppStart extends AppCompatActivity {
      * 跳转到...
      */
     private void redirectTo() {
+//        Intent intent = new Intent(this, AutioActivity.class);
+//        startActivity(intent);
+//        finish();
+
+
         String username = SPUtils.get(this,"username","").toString();
         if(username.equals("")){
             Intent intent = new Intent(this, LoginActivity.class);
@@ -80,8 +86,5 @@ public class AppStart extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
-/*        Intent intent = new Intent(this, Foot.class);
-        startActivity(intent);
-        finish();*/
     }
 }
