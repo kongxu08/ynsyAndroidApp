@@ -46,7 +46,10 @@ dependencies {
     implementation 'com.github.ybq:Android-SpinKit:1.2.0'
     //Toasty
     implementation 'com.github.GrenderG:Toasty:1.4.2'
-
+    //黄油刀
     implementation 'com.jakewharton:butterknife:8.8.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.0'
+    //解析HTML
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
+
 }
