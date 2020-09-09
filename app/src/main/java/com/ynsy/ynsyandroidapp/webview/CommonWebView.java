@@ -3,18 +3,13 @@ package com.ynsy.ynsyandroidapp.webview;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.DownloadManager;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -28,11 +23,9 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
-import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
@@ -41,9 +34,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.hsinfo.encrypt.Decrypt;
+
 import com.ynsy.ynsyandroidapp.LoginActivity;
 import com.ynsy.ynsyandroidapp.R;
 import com.ynsy.ynsyandroidapp.util.AndroidShare;
@@ -115,6 +108,8 @@ public class CommonWebView extends AppCompatActivity {
     private int FILE_CHOOSER_RESULT_CODE=1;
     private ValueCallback<Uri> uploadMessage;
     private ValueCallback<Uri[]> uploadMessageAboveL;
+
+    private String htmlContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -279,42 +274,40 @@ public class CommonWebView extends AppCompatActivity {
                     startActivity(intent);
                     return true;
                 }
-
-                //附件下载
-                //判断url末尾是否有doc等附件
-                result = parseurl(url);
-
-                if (result == 1) {
-                    T.showShortInfo(activity, "开始下载附件...",true);
-
-                    view.stopLoading();
-                    return true;
-                }
-
                 return false;
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                String username = SPUtils.get(activity,"username","").toString();
-                String token = SPUtils.get(activity,"token","").toString();
-                if(tv_title!=null&&StringHelper.isEmpty(String.valueOf(tv_title.getText()))){
-                    tv_title.setText(webView.getTitle());
+                if(url.startsWith(UrlManager.appRemoteHomePageUrl)){
+                    String username = SPUtils.get(activity,"username","").toString();
+                    String token = SPUtils.get(activity,"token","").toString();
+                    if(tv_title!=null&&StringHelper.isEmpty(String.valueOf(tv_title.getText()))){
+                        tv_title.setText(webView.getTitle());
+                    }
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("userName",username);
+                        String txlStr =SPUtils.get(activity,"TXL","").toString();
+                        txlStr = txlStr.replaceAll("\\\\","\\\\\\\\");
+                        JSONObject txlJson = new JSONObject(txlStr);
+                        jsonObject.put("contactBook",txlJson);
+                        jsonObject.put("softVersion",DeviceUtil.getReleaseVersion(activity));
+                        jsonObject.put("token",token);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    view.loadUrl("javascript:window._NativeActivate_('"+jsonObject.toString()+"')");
                 }
-                JSONObject jsonObject = new JSONObject();
-                try {
-                    jsonObject.put("userName",username);
-                    String txlStr =SPUtils.get(activity,"TXL","").toString();
-                    txlStr = txlStr.replaceAll("\\\\","\\\\\\\\");
-                    JSONObject txlJson = new JSONObject(txlStr);
-                    jsonObject.put("contactBook",txlJson);
-                    jsonObject.put("softVersion",DeviceUtil.getReleaseVersion(activity));
-                    jsonObject.put("token",token);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+
+                if(url.startsWith("http://mail.ynwdi.com/coremail")&&!url.contains("&mode=download")){
+                    view.loadUrl("javascript:console.log(document.getElementById('pageHeader').outerHTML='')");
+                    view.loadUrl("javascript:console.log(document.getElementById('dvContainer').style.top='0px')");
+                    view.loadUrl("javascript:console.log(document.getElementsByClassName('footer')[0].outerHTML='')");
                 }
-                view.loadUrl("javascript:window._NativeActivate_('"+jsonObject.toString()+"')");
+
+                super.onPageFinished(view, url);
             }
 
         });
@@ -810,30 +803,6 @@ public class CommonWebView extends AppCompatActivity {
                     }
                     break;
                 case 22:
-                    /*AlertDialog dialog = new AlertDialog.Builder(activity)
-                            .setTitle("发现新版本")
-                            .setMessage(changeContent)
-                            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setPositiveButton("下载", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                    progressDialog = new ProgressDialog(activity);
-                                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                                    progressDialog.setMessage("下载中...");
-                                    progressDialog.setMax(100);
-                                    progressDialog.setCanceledOnTouchOutside(false);
-                                    progressDialog.setCancelable(true);
-                                    progressDialog.show();
-                                    new Thread(downLoadRun).start();
-                                }
-                            }).create();
-                    dialog.show();*/
                      new SweetAlertDialog(activity)
                             .setTitleText("发现新版本")
                             .setContentText(changeContent)
@@ -895,55 +864,6 @@ public class CommonWebView extends AppCompatActivity {
             }
         }
     };
-
-
-    /**
-     * @param url
-     * @return 返回1 有附件，返回0 没有附件
-     * @author chenyu 判断url地址中末尾是否有doc等附件文件
-     * @time 2015年11月11日
-     */
-    private int parseurl(String url) {
-        int length = 0;
-        boolean bresult;
-        String strurl = "";
-        String strcut = "";
-
-        strurl = url;
-        length = strurl.length();
-
-        //取最后3位
-        strcut = strurl.substring(length - 4, length);
-
-        bresult = strcut.equals(".doc");
-        if (bresult == true) return 1;
-
-        bresult = strcut.equals(".ppt");
-        if (bresult == true) return 1;
-
-        bresult = strcut.equals(".xls");
-        if (bresult == true) return 1;
-
-        bresult = strcut.equals(".pdf");
-        if (bresult == true) return 1;
-
-        bresult = strcut.equals(".txt");
-        if (bresult == true) return 1;
-
-        //取最后4位
-        strcut = strurl.substring(length - 5, length);
-        bresult = strcut.equals(".docx");
-        if (bresult == true) return 1;
-
-        bresult = strcut.equals(".pptx");
-        if (bresult == true) return 1;
-
-        bresult = strcut.equals(".xlsx");
-        if (bresult == true) return 1;
-
-        //没有附件
-        return 0;
-    }
 
     private void appendCloseWebUrl(){
         if(closeWebViews==null){
@@ -1096,71 +1016,5 @@ public class CommonWebView extends AppCompatActivity {
             updateApk(UrlManager.appDownLoadUrl,zhbgToken);
         }
     };
-
-
-/*    private BroadcastReceiver broadcastReceiver;
-
-    void downloadBySystem(String url, String contentDisposition, String mimeType,String cookie) {
-        // 指定下载地址
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-        if(cookie!=null){
-            request.addRequestHeader("Cookie",cookie);
-        }
-        // 允许媒体扫描，根据下载的文件类型被加入相册、音乐等媒体库
-        request.allowScanningByMediaScanner();
-        // 设置通知的显示类型，下载进行时和完成后显示通知
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        // 设置通知栏的标题，如果不设置，默认使用文件名
-//        request.setTitle("This is title");
-        // 设置通知栏的描述
-//        request.setDescription("This is description");
-        // 允许在计费流量下下载
-        request.setAllowedOverMetered(false);
-        // 允许该记录在下载管理界面可见
-        request.setVisibleInDownloadsUi(false);
-        // 允许漫游时下载
-        request.setAllowedOverRoaming(true);
-        // 允许下载的网路类型
-        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
-        // 设置下载文件保存的路径和文件名
-        String fileName  = URLUtil.guessFileName(url, contentDisposition, mimeType);
-        L.d( fileName);
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
-//        另外可选一下方法，自定义下载路径
-//        request.setDestinationUri()
-//        request.setDestinationInExternalFilesDir()
-        final DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        // 添加一个下载任务
-        long downloadId = downloadManager.enqueue(request);
-        L.d(String.valueOf( downloadId));
-
-        listener(downloadId);
-
-    }
-
-    private void listener(final long Id) {
-
-        // 注册广播监听系统的下载完成事件。
-        IntentFilter intentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                long ID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                DownloadManager manager = (DownloadManager)context.getSystemService(Context.DOWNLOAD_SERVICE);
-                if (ID == Id) {
-                    T.showShortSuccess(activity," 下载完成!", true);
-                }
-            }
-
-        };
-
-        registerReceiver(broadcastReceiver, intentFilter);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(broadcastReceiver);
-    }*/
 
 }
