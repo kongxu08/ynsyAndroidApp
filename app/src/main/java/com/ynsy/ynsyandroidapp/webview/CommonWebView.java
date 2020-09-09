@@ -75,6 +75,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -87,6 +90,12 @@ public class CommonWebView extends AppCompatActivity {
     private String[] closeWebViews;
     private ImageView btn_back;
     private TextView tv_title;
+    @BindView(R.id.tv_close)
+    public ImageView tv_close;
+    @OnClick(R.id.tv_close)
+    public void closeWebView(View view){
+        finish();
+    }
     private static boolean back=false;
 
     ProgressDialog progressDialog;
@@ -134,6 +143,7 @@ public class CommonWebView extends AppCompatActivity {
                 setContentView(R.layout.activity_common_no_nav_webview);
             }else{
                 setContentView(R.layout.activity_common_webview);
+                ButterKnife.bind(this);
                 tv_title = findViewById(R.id.tv_navtitle);
                 if(title!=null){
                     tv_title.setText(title);

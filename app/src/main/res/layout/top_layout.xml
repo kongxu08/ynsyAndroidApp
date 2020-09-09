@@ -9,12 +9,21 @@
        <ImageView
             android:id="@+id/iv_back"
             android:layout_width="50dp"
-            android:layout_height="match_parent"
+            android:layout_height="20dp"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"
             android:clickable="true"
-            android:src="@drawable/ac3" />
-        
+            android:src="@drawable/icon_back" />
+
+        <ImageView
+            android:id="@+id/tv_close"
+            android:layout_width="50dp"
+            android:layout_height="20dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:src="@drawable/icon_close"/>
+
         <TextView
             android:id="@+id/tv_navtitle"
             android:layout_width="wrap_content"
