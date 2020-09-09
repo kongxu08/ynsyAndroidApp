@@ -8,7 +8,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0.8"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidr.AndroidJUnitRunner"
         resConfigs "en", "zh-rCN"
     }
     buildTypes {
@@ -47,4 +47,6 @@ dependencies {
     //Toasty
     implementation 'com.github.GrenderG:Toasty:1.4.2'
 
+    implementation 'com.jakewharton:butterknife:8.8.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.0'
 }
