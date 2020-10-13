@@ -5,19 +5,21 @@ public class UrlManager {
     public static String seeyonToken =seeyonHost+"/seeyon/rest/token/admin/cjwsjy123";
     public static String seeyonHostAuthentication =seeyonHost+"/seeyon/rest/orgMember/effective/loginNameAndPassword/";
     //oa服务器对应72.16.7.210:8085
-    public static String Host = "http://116.54.19.198:8111";
+//    public static String Host = "http://116.54.19.198:8111";
+    public static String Host = "http://app.ynwdi.com:8111";
 //    private static String Host = "http://116.54.19.198:8085";
 
     //正式app服务器对应172.16.7.210:8081
 //    private static String appHost = "http://116.54.19.198:8081";
     //李衍测试
-    private static String appHost = "http://116.54.19.198:8088";
+//    private static String appHost = "http://116.54.19.198:8088";
+    private static String appHost = "http://app.ynwdi.com:8088";
 
     public static String appVersionUrl = Host+"/oa/getAppVersion?appSystem=android";
     public static String appDownLoadUrl = appHost+"/download/ynslsd.apk";
 
     public static String appTXLUrl = Host+"/oa/a/appApi/phoneBook";
-//  public static String appTXLUrl = Host+"/oa/yn/a/appApi/phon eBook";
+//  public static String appTXLUrl = Host+"/oa/yn/a/appApi/phoneBook";
 
    //public static String appRemoteLoginUrl = Host+"/yn/a/login";
     public static String appRemoteHomePageUrl = appHost+"/";
