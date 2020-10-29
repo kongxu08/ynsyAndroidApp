@@ -189,6 +189,7 @@ public class LoadingActivity extends AppCompatActivity {
         intent.setClass(LoadingActivity.this, CommonWebView.class);
         Bundle bundle = new Bundle();
         bundle.putString("url", UrlManager.appRemoteHomePageUrl);
+//        bundle.putString("url", "file:///android_asset/js-call-native.html");
         bundle.putString("nav", "0");
         intent.putExtras(bundle);
         startActivity(intent);
